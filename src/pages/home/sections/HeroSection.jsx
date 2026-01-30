@@ -9,50 +9,50 @@ const HeroSection = () => {
   return (
     <section
       id="home"
-      className="relative min-h-[60vh] sm:min-h-[70vh] lg:h-[calc(100vh-104px)] flex items-center justify-center bg-no-repeat bg-cover bg-center px-4 sm:px-6 lg:px-8 overflow-hidden"
+      className="relative min-h-[70vh] sm:min-h-[72vh] lg:h-[calc(100vh-104px)] flex items-center justify-center bg-no-repeat bg-cover bg-center px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-0 overflow-hidden"
       style={{ backgroundImage: `url(${heroBg})` }}
       aria-label="Hero - Find your perfect property in Dubai"
     >
-      {/* Gradient overlay for readability and focus */}
+      {/* Gradient overlay for readability */}
       <div
-        className="absolute inset-0 bg-linear-to-b from-black/50 via-black/40 to-black/60 pointer-events-none"
+        className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/45 to-black/65 pointer-events-none"
         aria-hidden
       />
-      <div className="container mx-auto w-full relative z-10">
+      <div className="container mx-auto w-full relative z-10 flex justify-center sm:justify-start">
         <motion.div
-          className="flex flex-col gap-5 sm:gap-6 md:gap-7 lg:gap-8 max-w-4xl"
+          className="flex flex-col gap-4 sm:gap-5 md:gap-6 lg:gap-8 max-w-4xl w-full text-center sm:text-left items-center sm:items-start"
           variants={staggerContainer}
           initial="initial"
           animate="animate"
         >
-          {/* Eyebrow / context */}
+          {/* Eyebrow */}
           <motion.p
-            className="text-xs sm:text-sm font-medium tracking-[0.2em] uppercase text-[#C9A24D]"
+            className="text-[11px] sm:text-xs md:text-sm font-medium tracking-[0.18em] sm:tracking-[0.2em] uppercase text-[#C9A24D]"
             variants={staggerItem}
           >
-            Next Prime Real Estate
+            Dubai Real Estate
           </motion.p>
           <motion.h1
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[64px] font-bold text-white leading-[1.1] tracking-tight"
+            className="text-2xl min-[480px]:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-[64px] font-bold text-white leading-[1.15] sm:leading-[1.1] tracking-tight"
             variants={staggerItem}
           >
             Find your perfect
-            <br className="hidden sm:block" />
-            <span className="text-[#C9A24D]">property in UAE</span>
+            <br />
+            <span className="text-[#C9A24D]">property in Dubai</span>
           </motion.h1>
           <motion.p
             className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 leading-relaxed max-w-xl"
             variants={staggerItem}
           >
-            Buy, rent, or sell with confidence. Full-service support from search to keys—Dubai, Abu Dhabi, Sharjah & more.
+            Buy, rent, or sell with confidence. Full-service support from search to keys—Marina, Downtown, Palm & more.
           </motion.p>
-          <motion.div variants={staggerItem} className="space-y-4">
+          <motion.div variants={staggerItem} className="space-y-3 sm:space-y-4 w-full flex flex-col items-center sm:items-start">
             <SearchBar />
-            <p className="text-white/80 text-xs sm:text-sm">
+            <p className="text-white/85 text-xs sm:text-sm">
               Or{' '}
               <Link
                 to="/properties"
-                className="text-[#C9A24D] font-medium hover:text-[#E5B84D] underline underline-offset-2 transition-colors"
+                className="text-[#C9A24D] font-semibold hover:text-[#E5B84D] underline underline-offset-2 transition-colors py-1 -my-1"
               >
                 browse all properties
               </Link>

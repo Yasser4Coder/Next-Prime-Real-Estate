@@ -75,28 +75,34 @@ const SearchBar = () => {
     return ''
   }
 
+  const dropdownListClass =
+    'absolute left-0 right-0 top-full mt-1.5 bg-white border border-[#e1e1e1] rounded-xl shadow-xl max-h-[min(16rem,60vh)] sm:max-h-48 overflow-y-auto overflow-x-hidden z-20 py-1 overscroll-contain'
+  const dropdownItemClass =
+    'w-full text-left px-4 py-3 sm:py-2 text-sm min-h-[44px] sm:min-h-0 flex items-center hover:bg-[#f5f5f5] active:bg-[#eee] cursor-pointer transition-colors'
+
   return (
     <div className="w-full max-w-3xl" ref={containerRef}>
-      <div className="flex gap-2 sm:gap-3 items-center text-white text-xs sm:text-sm">
+      {/* Rent / Buy / Sell tabs - larger touch targets on mobile */}
+      <div className="flex gap-1 sm:gap-3 items-stretch text-white text-xs sm:text-sm">
         {LISTING_TYPES.map(({ key, label }) => (
           <button
             key={key}
             type="button"
             onClick={() => setListingType(key)}
-            className={`cursor-pointer px-3 sm:px-5 rounded-t-2xl py-2 transition-colors ${
+            className={`flex-1 sm:flex-none cursor-pointer px-4 sm:px-5 rounded-t-2xl py-3 sm:py-2 min-h-[44px] sm:min-h-0 flex items-center justify-center transition-colors touch-manipulation ${
               listingType === key
-                ? 'bg-white text-black'
-                : 'bg-transparent hover:bg-white/10'
+                ? 'bg-white text-black font-semibold'
+                : 'bg-white/20 hover:bg-white/25 active:bg-white/30'
             }`}
           >
             {label}
           </button>
         ))}
       </div>
-      <div className="w-full flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-5 bg-[#ffffffdb] px-4 sm:px-5 py-3.5 sm:py-4 rounded-b-2xl rounded-tr-2xl md:max-w-full">
+      <div className="w-full flex flex-col md:flex-row items-stretch md:items-center gap-0 md:gap-5 bg-[#ffffffeb] sm:bg-[#ffffffdb] px-4 sm:px-5 py-4 sm:py-4 rounded-b-2xl md:rounded-tr-2xl md:max-w-full shadow-lg md:shadow-none">
         {/* Location */}
-        <div className="flex-1 min-w-0 md:pr-6 md:border-r border-[#ffffff] relative">
-          <h2 className="text-sm sm:text-base font-semibold text-black">
+        <div className="flex-1 min-w-0 py-3 sm:py-0 md:pr-6 md:border-r border-b md:border-b-0 border-[#e8e8e8] md:border-[#ffffff] relative first:pt-0">
+          <h2 className="text-xs sm:text-base font-semibold text-black mb-1 sm:mb-0">
             Location
           </h2>
           <button
@@ -104,7 +110,7 @@ const SearchBar = () => {
             onClick={() =>
               setOpenDropdown((prev) => (prev === 'location' ? null : 'location'))
             }
-            className="w-full flex items-center justify-between gap-2 text-left cursor-pointer"
+            className="w-full flex items-center justify-between gap-2 text-left cursor-pointer py-2 sm:py-0 -mx-1 px-1 min-h-[44px] sm:min-h-0 touch-manipulation"
             aria-expanded={openDropdown === 'location'}
             aria-haspopup="listbox"
             aria-label="Select city"
@@ -119,15 +125,12 @@ const SearchBar = () => {
             <img
               src={locationIcon}
               alt=""
-              className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
+              className="w-5 h-5 shrink-0"
               aria-hidden
             />
           </button>
           {openDropdown === 'location' && (
-            <ul
-              className="absolute left-0 right-0 top-full mt-1 bg-white border border-[#e1e1e1] rounded-xl shadow-lg max-h-48 overflow-y-auto z-20 py-1"
-              role="listbox"
-            >
+            <ul className={dropdownListClass} role="listbox">
               <li role="option" aria-selected={!location}>
                 <button
                   type="button"
@@ -135,7 +138,7 @@ const SearchBar = () => {
                     setLocation('')
                     closeDropdown()
                   }}
-                  className="w-full text-left px-4 py-2 text-sm text-[#8F90A6] hover:bg-[#f5f5f5] cursor-pointer"
+                  className={`${dropdownItemClass} text-[#8F90A6]`}
                 >
                   Select Your City
                 </button>
@@ -148,9 +151,9 @@ const SearchBar = () => {
                       setLocation(loc)
                       closeDropdown()
                     }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-[#f5f5f5] ${
+                    className={`${dropdownItemClass} ${
                       location === loc ? 'text-[#B8862E] font-medium' : 'text-black'
-                    } cursor-pointer`}
+                    }`}
                   >
                     {loc}
                   </button>
@@ -161,8 +164,8 @@ const SearchBar = () => {
         </div>
 
         {/* Property Type */}
-        <div className="flex-1 min-w-0 md:pr-6 md:border-r border-[#ffffff] relative">
-          <h2 className="text-sm sm:text-base font-semibold text-black">
+        <div className="flex-1 min-w-0 py-3 sm:py-0 md:pr-6 md:border-r border-b md:border-b-0 border-[#e8e8e8] md:border-[#ffffff] relative">
+          <h2 className="text-xs sm:text-base font-semibold text-black mb-1 sm:mb-0">
             Property Type
           </h2>
           <button
@@ -172,7 +175,7 @@ const SearchBar = () => {
                 prev === 'propertyType' ? null : 'propertyType'
               )
             }
-            className="w-full flex items-center justify-between gap-2 text-left cursor-pointer"
+            className="w-full flex items-center justify-between gap-2 text-left cursor-pointer py-2 sm:py-0 -mx-1 px-1 min-h-[44px] sm:min-h-0 touch-manipulation"
             aria-expanded={openDropdown === 'propertyType'}
             aria-haspopup="listbox"
             aria-label="Select property type"
@@ -196,10 +199,7 @@ const SearchBar = () => {
             />
           </button>
           {openDropdown === 'propertyType' && (
-            <ul
-              className="absolute left-0 right-0 top-full mt-1 bg-white border border-[#e1e1e1] rounded-xl shadow-lg max-h-48 overflow-y-auto z-20 py-1"
-              role="listbox"
-            >
+            <ul className={dropdownListClass} role="listbox">
               <li role="option" aria-selected={!propertyType}>
                 <button
                   type="button"
@@ -207,7 +207,7 @@ const SearchBar = () => {
                     setPropertyType('')
                     closeDropdown()
                   }}
-                  className="w-full text-left px-4 py-2 text-sm text-[#8F90A6] hover:bg-[#f5f5f5] cursor-pointer"
+                  className={`${dropdownItemClass} text-[#8F90A6]`}
                 >
                   Select Type
                 </button>
@@ -220,11 +220,11 @@ const SearchBar = () => {
                       setPropertyType(type)
                       closeDropdown()
                     }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-[#f5f5f5] ${
+                    className={`${dropdownItemClass} ${
                       propertyType === type
                         ? 'text-[#B8862E] font-medium'
                         : 'text-black'
-                    } cursor-pointer`}
+                    }`}
                   >
                     {type}
                   </button>
@@ -235,8 +235,8 @@ const SearchBar = () => {
         </div>
 
         {/* Price Range */}
-        <div className="flex-1 min-w-0 relative">
-          <h2 className="text-sm sm:text-base font-semibold text-black">
+        <div className="flex-1 min-w-0 py-3 sm:py-0 relative">
+          <h2 className="text-xs sm:text-base font-semibold text-black mb-1 sm:mb-0">
             Price Range
           </h2>
           <button
@@ -246,7 +246,7 @@ const SearchBar = () => {
                 prev === 'priceRange' ? null : 'priceRange'
               )
             }
-            className="w-full flex items-center justify-between gap-2 text-left cursor-pointer"
+            className="w-full flex items-center justify-between gap-2 text-left cursor-pointer py-2 sm:py-0 -mx-1 px-1 min-h-[44px] sm:min-h-0 touch-manipulation"
             aria-expanded={openDropdown === 'priceRange'}
             aria-haspopup="listbox"
             aria-label="Select price range"
@@ -268,10 +268,7 @@ const SearchBar = () => {
             />
           </button>
           {openDropdown === 'priceRange' && (
-            <ul
-              className="absolute left-0 right-0 top-full mt-1 bg-white border border-[#e1e1e1] rounded-xl shadow-lg max-h-48 overflow-y-auto z-20 py-1"
-              role="listbox"
-            >
+            <ul className={dropdownListClass} role="listbox">
               {priceRanges.map(({ label, value }) => (
                 <li key={value || 'any'} role="option" aria-selected={priceRange === value}>
                   <button
@@ -280,13 +277,13 @@ const SearchBar = () => {
                       setPriceRange(value)
                       closeDropdown()
                     }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-[#f5f5f5] ${
+                    className={`${dropdownItemClass} ${
                       priceRange === value
                         ? 'text-[#B8862E] font-medium'
                         : value
                           ? 'text-black'
                           : 'text-[#8F90A6]'
-                    } cursor-pointer`}
+                    }`}
                   >
                     {label}
                   </button>
@@ -296,18 +293,20 @@ const SearchBar = () => {
           )}
         </div>
 
+        {/* Search button - full width on mobile, prominent CTA */}
         <button
           type="button"
           onClick={handleSearch}
-          className="p-3.5 sm:p-4 rounded-2xl cursor-pointer bg-[#C9A24D] hover:bg-[#B8862E] transition-colors shrink-0 self-center md:self-auto active:scale-95"
+          className="w-full md:w-auto py-4 sm:py-4 px-6 rounded-2xl cursor-pointer bg-[#B8862E] hover:bg-[#A67C2A] text-white font-semibold text-base sm:text-inherit sm:font-normal flex items-center justify-center gap-2 shrink-0 mt-2 md:mt-0 active:scale-[0.98] touch-manipulation min-h-[48px]"
           aria-label="Search properties"
         >
           <img
             src={searchIcon}
             alt=""
-            className="w-5 h-5"
+            className="w-5 h-5 shrink-0"
             aria-hidden
           />
+          <span className="md:sr-only">Search</span>
         </button>
       </div>
     </div>
