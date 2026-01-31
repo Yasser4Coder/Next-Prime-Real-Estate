@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { FaSearch, FaSlidersH } from 'react-icons/fa'
 import {
   PURPOSE_OPTIONS,
-  LOCATIONS,
+  LOCATIONS as DEFAULT_LOCATIONS,
   PROPERTY_TYPES,
   BEDROOMS_OPTIONS,
   BATHROOMS_OPTIONS,
@@ -18,6 +18,7 @@ const PropertiesFilter = ({
   setPurpose,
   location,
   setLocation,
+  locationOptions: locationOptionsProp,
   propertyType,
   setPropertyType,
   bedrooms,
@@ -38,6 +39,7 @@ const PropertiesFilter = ({
   const priceRanges = purpose === 'rent' ? PRICE_RANGES_RENT : PRICE_RANGES_BUY
   const priceMaxOptions =
     purpose === 'rent' ? PRICE_MAX_OPTIONS_RENT : PRICE_MAX_OPTIONS_BUY
+  const locationOptions = locationOptionsProp?.length ? locationOptionsProp : DEFAULT_LOCATIONS
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -89,7 +91,7 @@ const PropertiesFilter = ({
             aria-label="Select location"
           >
             <option value="">All Areas</option>
-            {LOCATIONS.filter((l) => l !== 'All Areas').map((l) => (
+            {locationOptions.filter((l) => l !== 'All Areas').map((l) => (
               <option key={l} value={l}>
                 {l}
               </option>
@@ -213,7 +215,7 @@ const PropertiesFilter = ({
                 className={selectClass}
               >
                 <option value="">All Areas</option>
-                {LOCATIONS.filter((l) => l !== 'All Areas').map((l) => (
+                {locationOptions.filter((l) => l !== 'All Areas').map((l) => (
                   <option key={l} value={l}>
                     {l}
                   </option>

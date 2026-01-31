@@ -1,0 +1,27 @@
+# Next Prime Real Estate - Apache config for Hostinger (SPA + routing)
+# This file is copied to dist/ on build. Upload dist/ contents to public_html.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # If the request is for an existing file or directory, serve it
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+
+  # Otherwise send everything to index.html so React Router handles the route
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Disable directory listing
+Options -Indexes
+
+# Optional: cache static assets (JS, CSS, images) - uncomment if your host allows
+# <IfModule mod_expires.c>
+#   ExpiresActive On
+#   ExpiresByType application/javascript "access plus 1 year"
+#   ExpiresByType text/css "access plus 1 year"
+#   ExpiresByType image/webp "access plus 1 year"
+#   ExpiresByType image/png "access plus 1 year"
+#   ExpiresByType image/jpeg "access plus 1 year"
+# </IfModule>

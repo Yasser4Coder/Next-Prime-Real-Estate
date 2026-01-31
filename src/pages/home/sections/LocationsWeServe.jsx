@@ -4,8 +4,9 @@ import { Map, Marker } from 'pigeon-maps'
 import { FaMapMarkerAlt } from 'react-icons/fa'
 import SectionHeader from '../components/SectionHeader'
 import { viewportOnce } from '../../../utils/motion'
+import { useSiteData } from '../../../context/DashboardStore'
 
-const AREAS = [
+const DEFAULT_AREAS = [
   {
     id: 'dubai-marina',
     name: 'Dubai Marina',
@@ -45,11 +46,13 @@ const AREAS = [
 ]
 
 const LocationsWeServe = () => {
+  const siteData = useSiteData()
+  const AREAS = siteData?.areas?.length ? siteData.areas : DEFAULT_AREAS
   const [activeId, setActiveId] = useState(AREAS[0]?.id)
 
   const activeArea = useMemo(
     () => AREAS.find((a) => a.id === activeId) ?? AREAS[0],
-    [activeId]
+    [AREAS, activeId]
   )
 
   return (

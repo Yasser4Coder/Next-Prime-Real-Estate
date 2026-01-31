@@ -5,7 +5,9 @@ import Header from '../../components/Header'
 import PropertieBlackCard from '../../components/PropertieBlackCard'
 import PropertiesFilter from './components/PropertiesFilter'
 import allPropertiesData from './data/allPropertiesData'
+import { useSiteData } from '../../context/DashboardStore'
 import {
+  LOCATIONS as FILTER_LOCATIONS,
   PRICE_RANGES_BUY,
   PRICE_RANGES_RENT,
   PRICE_MAX_OPTIONS_BUY,
@@ -18,40 +20,51 @@ const PER_PAGE = 12
 
 const Properties = () => {
   const [searchParams] = useSearchParams()
+  const siteData = useSiteData()
+  const allProperties = siteData?.properties?.length ? siteData.properties : allPropertiesData
   const [purpose, setPurpose] = useState('buy')
   const [location, setLocation] = useState('All Areas')
   const [propertyType, setPropertyType] = useState('All Types')
+  const locationOptions = useMemo(() => {
+    const list = purpose === 'rent'
+      ? (siteData?.locationsListRent?.length ? siteData.locationsListRent : FILTER_LOCATIONS.filter((l) => l !== 'All Areas'))
+      : (siteData?.locationsListBuy?.length ? siteData.locationsListBuy : FILTER_LOCATIONS.filter((l) => l !== 'All Areas'))
+    return ['All Areas', ...list]
+  }, [purpose, siteData?.locationsListBuy, siteData?.locationsListRent])
   const [bedrooms, setBedrooms] = useState('')
   const [bathrooms, setBathrooms] = useState('')
   const [priceMin, setPriceMin] = useState('')
   const [priceMax, setPriceMax] = useState('')
   const [sort, setSort] = useState('newest')
   const [page, setPage] = useState(1)
-  const [urlParamsApplied, setUrlParamsApplied] = useState(false)
 
+  // Sync filter state from URL whenever search params change (e.g. from header or hero search)
   useEffect(() => {
-    if (urlParamsApplied) return
     const purposeParam = searchParams.get('purpose')
     const locationParam = searchParams.get('location')
     const typeParam = searchParams.get('type')
     const priceMinParam = searchParams.get('priceMin')
     const priceMaxParam = searchParams.get('priceMax')
     if (purposeParam === 'rent' || purposeParam === 'buy') setPurpose(purposeParam)
-    if (locationParam) setLocation(locationParam)
-    if (typeParam) setPropertyType(typeParam)
-    if (priceMinParam) setPriceMin(priceMinParam)
+    if (locationParam != null && locationParam !== '') setLocation(locationParam)
+    if (typeParam != null && typeParam !== '') setPropertyType(typeParam)
+    if (priceMinParam != null) setPriceMin(priceMinParam)
     if (priceMaxParam !== null && priceMaxParam !== undefined) setPriceMax(priceMaxParam)
-    setUrlParamsApplied(true)
-  }, [searchParams, urlParamsApplied])
+    setPage(1)
+  }, [searchParams])
 
   const priceRanges = purpose === 'rent' ? PRICE_RANGES_RENT : PRICE_RANGES_BUY
   const priceMaxOpts = purpose === 'rent' ? PRICE_MAX_OPTIONS_RENT : PRICE_MAX_OPTIONS_BUY
 
   const filteredAndSorted = useMemo(() => {
-    let list = allPropertiesData.filter((p) => p.purpose === purpose)
+    let list = allProperties.filter((p) => p.purpose === purpose)
 
     if (location && location !== 'All Areas') {
-      list = list.filter((p) => p.location === location)
+      const locNorm = location.trim().toLowerCase()
+      list = list.filter((p) => {
+        const pLoc = (p.location || '').toString().trim().toLowerCase()
+        return pLoc === locNorm
+      })
     }
     if (propertyType && propertyType !== 'All Types') {
       list = list.filter((p) => p.type === propertyType)
@@ -80,6 +93,7 @@ const Properties = () => {
     })
     return sorted
   }, [
+    allProperties,
     purpose,
     location,
     propertyType,
@@ -150,6 +164,7 @@ const Properties = () => {
               setPurpose={setPurpose}
               location={location}
               setLocation={setLocation}
+              locationOptions={locationOptions}
               propertyType={propertyType}
               setPropertyType={setPropertyType}
               bedrooms={bedrooms}
@@ -210,6 +225,7 @@ const Properties = () => {
                       propType={property.type}
                       propBath={property.bathrooms}
                       propBed={property.bedrooms}
+                      propStatus={property.overview?.status ?? ''}
                     />
                   </motion.div>
                 ))}

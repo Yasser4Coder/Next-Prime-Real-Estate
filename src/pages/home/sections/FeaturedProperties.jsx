@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import SectionHeader from '../components/SectionHeader'
 import PropertieBlackCard from '../../../components/PropertieBlackCard'
 import FeaturedPropertiesData from '../data/FeaturedPropertiesData'
+import { useSiteData } from '../../../context/DashboardStore'
 import arrowRight from '../../../assets/icons/arrow-right-white.svg'
 import arrowLeft from '../../../assets/icons/arrow-left-grey.svg'
 import { viewportOnce } from '../../../utils/motion'
@@ -14,8 +15,14 @@ const FeaturedProperties = () => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [slideIndex, setSlideIndex] = useState(0)
   const [touchStartX, setTouchStartX] = useState(null)
-
-  const total = FeaturedPropertiesData.length
+  const siteData = useSiteData()
+  const featuredList =
+    siteData?.featuredPropertyIds?.length && siteData?.properties?.length
+      ? siteData.featuredPropertyIds
+          .map((id) => siteData.properties.find((p) => p.id === id))
+          .filter(Boolean)
+      : FeaturedPropertiesData
+  const total = featuredList.length
   const totalSlides = Math.ceil(total / CARDS_PER_SLIDE_DESKTOP)
 
   const goPrev = useCallback(() => {
@@ -68,7 +75,7 @@ const FeaturedProperties = () => {
 
   const getSlideCards = (slideIdx) => {
     const start = slideIdx * CARDS_PER_SLIDE_DESKTOP
-    return FeaturedPropertiesData.slice(start, start + CARDS_PER_SLIDE_DESKTOP)
+    return featuredList.slice(start, start + CARDS_PER_SLIDE_DESKTOP)
   }
 
   return (
@@ -102,7 +109,7 @@ const FeaturedProperties = () => {
             className="flex transition-transform duration-300 ease-out"
             style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           >
-            {FeaturedPropertiesData.map((property) => (
+            {featuredList.map((property) => (
               <div key={property.id} className="w-full shrink-0 px-0">
                 <PropertieBlackCard
                   propId={property.id}
@@ -113,6 +120,7 @@ const FeaturedProperties = () => {
                   propType={property.type}
                   propBath={property.bathrooms}
                   propBed={property.bedrooms}
+                  propStatus={property.overview?.status ?? ''}
                 />
               </div>
             ))}
@@ -146,6 +154,7 @@ const FeaturedProperties = () => {
                     propType={property.type}
                     propBath={property.bathrooms}
                     propBed={property.bedrooms}
+                    propStatus={property.overview?.status ?? ''}
                   />
                 ))}
               </div>

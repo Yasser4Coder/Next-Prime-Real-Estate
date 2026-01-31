@@ -5,6 +5,7 @@ import Header from '../../components/Header'
 import OurSolutions from './sections/OurSolutions'
 import FeaturedProperties from './sections/FeaturedProperties'
 import LocationsWeServe from './sections/LocationsWeServe'
+import OurDevelopers from './sections/OurDevelopers'
 import FeaturesUnique from './sections/FeaturesUnique'
 import WhatOurClientsSay from './sections/WhatOurClientsSay'
 import KeyStats from './sections/KeyStats'
@@ -29,6 +30,7 @@ const Home = () => {
       <OurSolutions />
       <FeaturedProperties />
       <LocationsWeServe />
+      <OurDevelopers />
       <FeaturesUnique />
       <WhatOurClientsSay />
       <KeyStats />

@@ -4,11 +4,12 @@ import searchIcon from '../../../assets/icons/search-icon.svg'
 import locationIcon from '../../../assets/icons/location-icon.svg'
 import arrowDownIcon from '../../../assets/icons/arrow-down-icon.svg'
 import {
-  LOCATIONS,
+  LOCATIONS as FALLBACK_LOCATIONS,
   PROPERTY_TYPES,
   PRICE_RANGES_BUY,
   PRICE_RANGES_RENT,
 } from '../data/SearchBarData'
+import { useSiteData } from '../../../context/DashboardStore'
 
 const LISTING_TYPES = [
   { key: 'rent', label: 'Rent' },
@@ -18,6 +19,7 @@ const LISTING_TYPES = [
 
 const SearchBar = () => {
   const navigate = useNavigate()
+  const siteData = useSiteData()
   const [listingType, setListingType] = useState('rent')
   const [location, setLocation] = useState('')
   const [propertyType, setPropertyType] = useState('')
@@ -25,6 +27,9 @@ const SearchBar = () => {
   const [openDropdown, setOpenDropdown] = useState(null)
   const containerRef = useRef(null)
 
+  const LOCATIONS_BUY = (siteData?.locationsListBuy?.length ? siteData.locationsListBuy : FALLBACK_LOCATIONS)
+  const LOCATIONS_RENT = (siteData?.locationsListRent?.length ? siteData.locationsListRent : FALLBACK_LOCATIONS)
+  const LOCATIONS = listingType === 'rent' ? LOCATIONS_RENT : LOCATIONS_BUY
   const priceRanges = listingType === 'rent' ? PRICE_RANGES_RENT : PRICE_RANGES_BUY
 
   useEffect(() => {

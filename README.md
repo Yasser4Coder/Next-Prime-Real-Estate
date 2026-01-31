@@ -1,3 +1,17 @@
+# Next Prime Real Estate – Frontend
+
+## API mode
+
+To use the backend API instead of localStorage:
+
+1. Copy `.env.example` to `.env` and set `VITE_API_URL` (e.g. `http://localhost:5000`).
+2. Ensure the backend is running and CORS allows your frontend origin.
+3. Log in with your dashboard email and password (e.g. `admin@nextprimerealestate.com` / `admin123`).
+
+When `VITE_API_URL` is set, the main site fetches data from `GET /api/site-data` and the dashboard uses the API for all CRUD. When it is not set, the app uses localStorage as before.
+
+---
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

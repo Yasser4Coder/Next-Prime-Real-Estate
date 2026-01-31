@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import SectionHeader from '../components/SectionHeader'
 import TestimonialCard from '../components/TestimonialCard'
 import TestimonialsData from '../data/TestimonialsData'
+import { useSiteData } from '../../../context/DashboardStore'
 import arrowRight from '../../../assets/icons/arrow-right-white.svg'
 import arrowLeft from '../../../assets/icons/arrow-left-grey.svg'
 import { viewportOnce } from '../../../utils/motion'
@@ -14,8 +15,9 @@ const WhatOurClientsSay = () => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [slideIndex, setSlideIndex] = useState(0)
   const [touchStartX, setTouchStartX] = useState(null)
-
-  const total = TestimonialsData.length
+  const siteData = useSiteData()
+  const testimonialsList = siteData?.testimonials?.length ? siteData.testimonials : TestimonialsData
+  const total = testimonialsList.length
   const totalSlides = Math.ceil(total / CARDS_PER_SLIDE_DESKTOP)
 
   const goPrev = useCallback(() => {
@@ -68,7 +70,7 @@ const WhatOurClientsSay = () => {
 
   const getSlideCards = (slideIdx) => {
     const start = slideIdx * CARDS_PER_SLIDE_DESKTOP
-    return TestimonialsData.slice(start, start + CARDS_PER_SLIDE_DESKTOP)
+    return testimonialsList.slice(start, start + CARDS_PER_SLIDE_DESKTOP)
   }
 
   return (
@@ -100,7 +102,7 @@ const WhatOurClientsSay = () => {
             className="flex transition-transform duration-300 ease-out"
             style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           >
-            {TestimonialsData.map((testimonial) => (
+            {testimonialsList.map((testimonial) => (
               <div key={testimonial.id} className="w-full shrink-0 px-0">
                 <TestimonialCard
                   name={testimonial.name}

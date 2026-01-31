@@ -6,20 +6,118 @@ import { FaArrowLeft, FaChevronLeft, FaChevronRight, FaTimes, FaPhoneAlt, FaWhat
 import Header from '../../components/Header'
 import Button from '../../components/Button'
 import allPropertiesData from './data/allPropertiesData'
+import { useSiteData } from '../../context/DashboardStore'
+import { getPropertyPublic } from '../../api/client'
 import { setSeoMeta } from '../../utils/seo'
 import { fadeIn } from '../../utils/motion'
+
+const useApi = () => !!import.meta.env.VITE_API_URL
 
 const formatAed = (value) =>
   new Intl.NumberFormat('en-AE', { style: 'currency', currency: 'AED', maximumFractionDigits: 0 }).format(value)
 
+function tryJson(s, fallback) {
+  if (s == null || typeof s !== 'string' || !s.trim()) return fallback
+  try {
+    const v = JSON.parse(s.trim())
+    return v
+  } catch {
+    return fallback
+  }
+}
+
+function normalizeProperty(p) {
+  if (!p) return null
+  const toPhotos = (photos, image) => {
+    if (Array.isArray(photos)) return photos.filter((src) => typeof src === 'string')
+    if (typeof photos === 'string') {
+      const parsed = tryJson(photos, null)
+      if (Array.isArray(parsed)) return parsed.filter((s) => typeof s === 'string')
+      if (photos.trim()) return [photos.trim()]
+    }
+    const main = typeof image === 'string' && image.trim() ? image.trim() : null
+    return main ? [main] : []
+  }
+  const toOverview = (v) => {
+    if (v && typeof v === 'object' && !Array.isArray(v)) return v
+    const parsed = tryJson(v, null)
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
+  }
+  const toHighlights = (v) => {
+    if (Array.isArray(v)) return v.filter((s) => typeof s === 'string')
+    const parsed = tryJson(v, null)
+    if (Array.isArray(parsed)) return parsed.filter((s) => typeof s === 'string')
+    if (typeof v === 'string' && v.trim()) return v.trim().split(/\n/).map((s) => s.trim()).filter(Boolean)
+    return []
+  }
+  const toResidenceOptions = (v) => {
+    if (Array.isArray(v)) return v
+    const parsed = tryJson(v, null)
+    return Array.isArray(parsed) ? parsed : []
+  }
+  const toFloorPlans = (v) => {
+    if (Array.isArray(v)) return v
+    const parsed = tryJson(v, null)
+    return Array.isArray(parsed) ? parsed : []
+  }
+  const toFeatures = (v) => {
+    if (v && typeof v === 'object' && !Array.isArray(v)) return v
+    const parsed = tryJson(v, null)
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null
+  }
+  const toReviews = (v) => (Array.isArray(v) ? v : tryJson(v, []) || [])
+
+  const photos = toPhotos(p.photos, p.image)
+  const photosFinal = photos.length ? photos : (p.image && typeof p.image === 'string' ? [p.image] : [])
+
+  return {
+    ...p,
+    photos: photosFinal,
+    address: p.address && typeof p.address === 'object' ? p.address : tryJson(p.address, null) || { line1: p.location || 'Dubai', city: 'Dubai', country: 'UAE', lat: 25.2, lng: 55.3 },
+    overview: toOverview(p.overview),
+    highlights: toHighlights(p.highlights),
+    residenceOptions: toResidenceOptions(p.residenceOptions),
+    floorPlans: toFloorPlans(p.floorPlans),
+    features: toFeatures(p.features),
+    reviews: toReviews(p.reviews),
+  }
+}
+
 const PropertyDetails = () => {
   const { id } = useParams()
   const propertyId = Number(id)
+  const siteData = useSiteData()
+  const list = siteData?.properties?.length ? siteData.properties : allPropertiesData
+  const [fetchedProperty, setFetchedProperty] = useState(null)
+  const [fetchLoading, setFetchLoading] = useState(!!import.meta.env.VITE_API_URL)
+  const [fetchError, setFetchError] = useState(false)
 
-  const property = useMemo(
-    () => allPropertiesData.find((p) => p.id === propertyId),
-    [propertyId]
-  )
+  useEffect(() => {
+    if (!useApi() || !id) {
+      setFetchLoading(false)
+      return
+    }
+    setFetchLoading(true)
+    setFetchError(false)
+    getPropertyPublic(id)
+      .then((data) => {
+        setFetchedProperty(normalizeProperty(data))
+        setFetchError(false)
+      })
+      .catch(() => setFetchError(true))
+      .finally(() => setFetchLoading(false))
+  }, [id])
+
+  const property = useMemo(() => {
+    if (useApi()) {
+      if (fetchedProperty) return fetchedProperty
+      if (fetchLoading) return null
+      const fromList = list.find((x) => Number(x.id) === propertyId)
+      return fromList ? normalizeProperty(fromList) : null
+    }
+    const p = list.find((x) => Number(x.id) === propertyId)
+    return p ? normalizeProperty(p) : null
+  }, [useApi(), fetchedProperty, fetchLoading, list, propertyId])
 
   const [activePhotoIndex, setActivePhotoIndex] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
@@ -39,9 +137,10 @@ const PropertyDetails = () => {
       if (e.key === 'Escape') setIsLightboxOpen(false)
       if (e.key === 'ArrowLeft') setActivePhotoIndex((i) => Math.max(0, i - 1))
       if (e.key === 'ArrowRight')
-        setActivePhotoIndex((i) =>
-          Math.min((property?.photos?.length ?? 1) - 1, i + 1)
-        )
+        setActivePhotoIndex((i) => {
+          const len = Array.isArray(property?.photos) ? property.photos.length : 1
+          return Math.min(Math.max(0, len - 1), i + 1)
+        })
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
@@ -57,16 +156,25 @@ const PropertyDetails = () => {
             Back to Properties
           </Link>
           <div className="mt-10 bg-[#FCFCFD] border border-[#e1e1e1] rounded-2xl p-10 text-center">
+            {fetchLoading ? (
+              <><h1 className="text-2xl font-medium text-black">Loading property…</h1><p className="mt-2 text-[#717171]">Please wait.</p></>
+            ) : (
+              <>
             <h1 className="text-2xl font-medium text-black">Property not found</h1>
             <p className="mt-2 text-[#717171]">The property you’re looking for doesn’t exist.</p>
+              </>
+            )}
           </div>
         </main>
       </motion.div>
     )
   }
 
-  const photos = property.photos?.length ? property.photos : [property.image]
-  const activePhoto = photos[Math.min(activePhotoIndex, photos.length - 1)]
+  const photos = Array.isArray(property.photos)
+    ? property.photos.filter((src) => typeof src === 'string')
+    : []
+  const photosSafe = photos.length ? photos : (property.image ? [property.image] : [])
+  const activePhoto = photosSafe[Math.min(activePhotoIndex, Math.max(0, photosSafe.length - 1))] || null
 
   const OverviewItem = ({ label, value }) => (
     <div className="bg-white border border-[#e1e1e1] rounded-xl p-3.5 sm:p-4">
@@ -153,7 +261,7 @@ const PropertyDetails = () => {
               </button>
               <div className="flex items-center justify-between mt-3">
                 <p className="text-sm text-[#666]">
-                  Photo {activePhotoIndex + 1} of {photos.length}
+                  Photo {activePhotoIndex + 1} of {photosSafe.length}
                 </p>
                 <button
                   type="button"
@@ -164,7 +272,7 @@ const PropertyDetails = () => {
                 </button>
               </div>
               <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
-                {photos.map((src, i) => (
+                {photosSafe.map((src, i) => (
                   <button
                     key={`${src}-${i}`}
                     type="button"
@@ -428,9 +536,9 @@ const PropertyDetails = () => {
           <button
             type="button"
             className="absolute right-4 text-white p-3 rounded-full bg-white/10 hover:bg-white/20 cursor-pointer"
-            onClick={() => setActivePhotoIndex((i) => Math.min(photos.length - 1, i + 1))}
+            onClick={() => setActivePhotoIndex((i) => Math.min(photosSafe.length - 1, i + 1))}
             aria-label="Next photo"
-            disabled={activePhotoIndex >= photos.length - 1}
+            disabled={activePhotoIndex >= photosSafe.length - 1}
           >
             <FaChevronRight className="w-5 h-5" />
           </button>

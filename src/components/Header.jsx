@@ -3,13 +3,14 @@ import { Link, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import logo from '../assets/logo/gold_logo.webp'
 import Button from './Button'
-import { LOCATIONS } from '../pages/home/data/SearchBarData'
+import { LOCATIONS as FALLBACK_LOCATIONS } from '../pages/home/data/SearchBarData'
+import { useSiteData } from '../context/DashboardStore'
 
 const navLinks = [
   { path: '/', label: 'Home' },
   { path: '/properties', label: 'Properties' },
   { path: '/#services', label: 'Services' },
-  { path: '/#about', label: 'About' },
+  { path: '/about', label: 'About' },
 ]
 
 const Header = () => {
@@ -17,12 +18,16 @@ const Header = () => {
   const [openDropdown, setOpenDropdown] = useState(null) // 'buy' | 'rent' | null
   const buyRentRef = useRef(null)
   const location = useLocation()
+  const siteData = useSiteData()
+  const LOCATIONS_BUY = (siteData?.locationsListBuy?.length ? siteData.locationsListBuy : FALLBACK_LOCATIONS)
+  const LOCATIONS_RENT = (siteData?.locationsListRent?.length ? siteData.locationsListRent : FALLBACK_LOCATIONS)
 
   const closeMenu = () => setIsMenuOpen(false)
 
   const isActive = (path) => {
     if (path === '/') return location.pathname === '/'
     if (path === '/properties') return location.pathname === '/properties'
+    if (path === '/about') return location.pathname === '/about'
     return false
   }
 
@@ -157,7 +162,7 @@ const Header = () => {
                     >
                       View all for sale
                     </Link>
-                    {LOCATIONS.map((loc) => (
+                    {LOCATIONS_BUY.map((loc) => (
                       <Link
                         key={loc}
                         to={`/properties?purpose=buy&location=${encodeURIComponent(loc)}`}
@@ -201,7 +206,7 @@ const Header = () => {
                     >
                       View all for rent
                     </Link>
-                    {LOCATIONS.map((loc) => (
+                    {LOCATIONS_RENT.map((loc) => (
                       <Link
                         key={loc}
                         to={`/properties?purpose=rent&location=${encodeURIComponent(loc)}`}
@@ -221,12 +226,20 @@ const Header = () => {
           </nav>
 
           <div className="hidden lg:flex items-center gap-3 shrink-0 pl-4 border-l border-white/10">
-            <Button text="Login" className="text-sm" />
-            <Button text="Register" transparent={true} className="text-sm" />
+            <a
+              href={siteData?.contact?.phoneTel ? `tel:${siteData.contact.phoneTel}` : 'tel:+971527780718'}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8862E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#262626]"
+              aria-label="Call us"
+            >
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              <span className="hidden xl:inline">Call</span>
+            </a>
+            <Button text="Contact us" to="/#contact" className="text-sm" />
           </div>
 
-          <div className="flex lg:hidden items-center gap-3">
-            <Button text="Login" className="text-sm" />
+          <div className="flex lg:hidden items-center gap-2">
             <button
               type="button"
               className="p-2 rounded-lg text-white/90 cursor-pointer hover:text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8862E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#262626]"
@@ -306,7 +319,7 @@ const Header = () => {
                   <Link to="/properties?purpose=buy" onClick={closeMenu} className="block px-3 py-2 text-sm text-white/80 hover:text-white rounded-lg hover:bg-white/5">
                     View all for sale
                   </Link>
-                  {LOCATIONS.map((loc) => (
+                  {LOCATIONS_BUY.map((loc) => (
                     <Link
                       key={loc}
                       to={`/properties?purpose=buy&location=${encodeURIComponent(loc)}`}
@@ -322,7 +335,7 @@ const Header = () => {
                   <Link to="/properties?purpose=rent" onClick={closeMenu} className="block px-3 py-2 text-sm text-white/80 hover:text-white rounded-lg hover:bg-white/5">
                     View all for rent
                   </Link>
-                  {LOCATIONS.map((loc) => (
+                  {LOCATIONS_RENT.map((loc) => (
                     <Link
                       key={loc}
                       to={`/properties?purpose=rent&location=${encodeURIComponent(loc)}`}
@@ -341,8 +354,18 @@ const Header = () => {
               </div>
 
               <div className="px-5 py-5 border-t border-white/10 flex flex-col gap-3 shrink-0">
-                <Button text="Login" fullWidth className="text-sm" />
-                <Button text="Register" transparent={true} fullWidth className="text-sm" />
+                <Button text="Contact us" to="/#contact" fullWidth className="text-sm" />
+                <a
+                  href={siteData?.contact?.phoneTel ? `tel:${siteData.contact.phoneTel}` : 'tel:+971527780718'}
+                  onClick={closeMenu}
+                  className="flex items-center justify-center gap-2 py-3 rounded-xl border border-white/20 text-white/90 hover:text-white hover:bg-white/10 text-sm font-medium transition-colors"
+                  aria-label="Call us"
+                >
+                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  Call us
+                </a>
               </div>
             </motion.nav>
           </motion.div>

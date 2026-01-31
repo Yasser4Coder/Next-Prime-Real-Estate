@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FaPhoneAlt, FaWhatsapp, FaEnvelope, FaTimes } from 'react-icons/fa'
+import { useSiteData } from '../context/DashboardStore'
 
 const CONTACT = {
   phoneDisplay: '+971 50 000 0000',
@@ -9,8 +10,17 @@ const CONTACT = {
   whatsappText: 'Hi Next Prime, I’m interested in your Dubai properties.',
 }
 
+const FALLBACK_CONTACT = {
+  phoneDisplay: '+971 52 778 0718',
+  phoneTel: '+971527780718',
+  email: 'contact@nextprimerealestate.com',
+  whatsappText: "Hi Next Prime, I'm interested in your Dubai properties.",
+}
+
 const ContactSideWidget = () => {
   const [open, setOpen] = useState(false)
+  const siteData = useSiteData()
+  const CONTACT = siteData?.contact || FALLBACK_CONTACT
 
   return (
     <motion.div

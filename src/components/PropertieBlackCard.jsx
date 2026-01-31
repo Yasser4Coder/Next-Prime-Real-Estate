@@ -3,6 +3,9 @@ import { motion } from 'framer-motion'
 import Button from './Button'
 import { motionTransition } from '../utils/motion'
 
+const formatAed = (value) =>
+  new Intl.NumberFormat('en-AE', { style: 'currency', currency: 'AED', maximumFractionDigits: 0 }).format(Number(value) || 0)
+
 const PropertieBlackCard = ({
   propId,
   propTitle,
@@ -12,6 +15,7 @@ const PropertieBlackCard = ({
   propType,
   propPrice,
   propImage,
+  propStatus,
 }) => {
   return (
     <motion.article
@@ -47,11 +51,16 @@ const PropertieBlackCard = ({
             <span className="bg-[#1A1A1A] border text-white text-xs sm:text-sm border-[#262626] rounded-full py-1.5 px-3 inline-flex items-center gap-1">
               {propType}
             </span>
+            {propStatus ? (
+              <span className="bg-[#B8862E]/15 border border-[#B8862E] text-[#B8862E] text-xs sm:text-sm rounded-full py-1.5 px-3 inline-flex items-center gap-1 font-medium">
+                {propStatus}
+              </span>
+            ) : null}
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-auto pt-2">
             <div>
               <p className="text-[#717171] text-sm sm:text-base">Price</p>
-              <p className="text-black text-lg sm:text-xl font-medium">${propPrice.toLocaleString()}</p>
+              <p className="text-black text-lg sm:text-xl font-medium">{formatAed(propPrice)}</p>
             </div>
             <div className="w-full sm:w-auto">
               <Button

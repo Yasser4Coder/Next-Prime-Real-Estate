@@ -53,8 +53,8 @@ const allPropertiesData = [
     floorPlans: defaultFloorPlans,
     agent: {
       name: 'Next Prime Advisor',
-      phone: '+971 50 000 0000',
-      email: 'info@nextprimerealestate.com',
+      phone: '+971 52 778 0718',
+      email: 'contact@nextprimerealestate.com',
     },
     reviews: [
       {
@@ -102,8 +102,8 @@ const allPropertiesData = [
     floorPlans: defaultFloorPlans,
     agent: {
       name: 'Next Prime Advisor',
-      phone: '+971 50 000 0000',
-      email: 'info@nextprimerealestate.com',
+      phone: '+971 52 778 0718',
+      email: 'contact@nextprimerealestate.com',
     },
     reviews: [],
   },
@@ -313,8 +313,8 @@ const allPropertiesData = [
     floorPlans: defaultFloorPlans,
     agent: {
       name: 'Next Prime Advisor',
-      phone: '+971 50 000 0000',
-      email: 'info@nextprimerealestate.com',
+      phone: '+971 52 778 0718',
+      email: 'contact@nextprimerealestate.com',
     },
     reviews: [],
   },
@@ -354,8 +354,8 @@ const allPropertiesData = [
     floorPlans: defaultFloorPlans,
     agent: {
       name: 'Next Prime Advisor',
-      phone: '+971 50 000 0000',
-      email: 'info@nextprimerealestate.com',
+      phone: '+971 52 778 0718',
+      email: 'contact@nextprimerealestate.com',
     },
     reviews: [],
   },
@@ -395,8 +395,8 @@ const allPropertiesData = [
     floorPlans: defaultFloorPlans,
     agent: {
       name: 'Next Prime Advisor',
-      phone: '+971 50 000 0000',
-      email: 'info@nextprimerealestate.com',
+      phone: '+971 52 778 0718',
+      email: 'contact@nextprimerealestate.com',
     },
     reviews: [],
   },
@@ -436,8 +436,8 @@ const allPropertiesData = [
     floorPlans: defaultFloorPlans,
     agent: {
       name: 'Next Prime Advisor',
-      phone: '+971 50 000 0000',
-      email: 'info@nextprimerealestate.com',
+      phone: '+971 52 778 0718',
+      email: 'contact@nextprimerealestate.com',
     },
     reviews: [],
   },
