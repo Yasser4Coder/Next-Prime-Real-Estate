@@ -1,6 +1,12 @@
 /**
- * About page – hero, story, values, mission, team. Add photo URLs when ready.
+ * About page – hero, story, values, mission, team.
+ * CEO: Abderraouf Malouadjmi. Partner: Adel Farah.
  */
+import abdPhoto from '../../assets/about/abd.png'
+import abdPhoto2 from '../../assets/about/abd-suit.png'
+import adelPhoto from '../../assets/about/adel1.jpeg'
+import adelPhoto2 from '../../assets/about/adel2.png'
+import companyOfficePhoto from '../../assets/about/company-office.webp'
 
 export const hero = {
   headline: 'Where trust meets opportunity',
@@ -10,7 +16,7 @@ export const hero = {
 export const story = {
   heading: 'Our story, rooted in Dubai',
   body: 'Next Prime Real Estate was founded on trust, strategy, and long-term value creation. With over 4 years of hands-on experience in off-plan real estate, we specialize in connecting investors and homebuyers with high-potential properties and guiding them through every stage of the journey. Our approach combines deep market insight with personalized consulting so every client can make informed, confident decisions.',
-  image: '', // Add company/office image URL when ready
+  image: companyOfficePhoto,
 }
 
 export const teamIntro = {
@@ -35,7 +41,8 @@ export const teamMembers = [
     name: 'Abderraouf Malouadjmi',
     role: 'CEO & Founder',
     company: 'Next Prime Real Estate',
-    photo: '', // Add photo URL when ready
+    photo1: abdPhoto2,
+    photo2: abdPhoto,
     bio: [
       'A results-driven real estate professional with 4 years of experience in the off-plan property market, dedicated to helping investors and homebuyers make smart, future-focused decisions.',
       "I'm Abderraouf Malouadjmi, CEO of Next Prime Real Estate, a company built on trust, strategy, and long-term value creation.",
@@ -49,7 +56,8 @@ export const teamMembers = [
     name: 'Adel Farah',
     role: 'Partner',
     company: 'Next Prime Real Estate',
-    photo: '', // Add photo URL when ready
+    photo1: adelPhoto,
+    photo2: adelPhoto2,
     bio: [
       'Adel Farah is a strategic partner at Next Prime Real Estate, bringing strong business insight and a results-oriented mindset to the company.',
       'With a focus on operational efficiency and strategic growth, Adel plays a key role in supporting company expansion, strengthening partnerships, and ensuring high standards across all business activities.',

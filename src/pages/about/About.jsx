@@ -7,6 +7,7 @@ import { setSeoMeta } from '../../utils/seo'
 import { fadeIn } from '../../utils/motion'
 import { viewportOnce, staggerContainer, staggerItem } from '../../utils/motion'
 import starsIcon from '../../assets/icons/stars-icon.svg'
+import aboutHeroBg from '../../assets/about/bg.jpg'
 
 const valueIcons = { building: FaBuilding, chart: FaChartLine, handshake: FaHandshake }
 
@@ -33,11 +34,13 @@ const About = () => {
     <motion.div {...fadeIn}>
       <Header />
 
-      {/* Hero – trust statement (dark box over subtle bg) */}
+      {/* Hero – trust statement (bg.jpg with overlay, card on top) */}
       <section
-        className="pt-24 sm:pt-28 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 bg-[#262626] relative overflow-hidden"
+        className="pt-24 sm:pt-28 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: `url(${aboutHeroBg})` }}
         aria-label="About Next Prime Real Estate"
       >
+        <div className="absolute inset-0 bg-[#262626]/80 z-0" aria-hidden />
         <div className="container mx-auto max-w-3xl text-center relative z-10">
           <motion.div
             className="rounded-2xl bg-[#262626] border border-[#B8862E]/30 px-6 sm:px-10 py-10 sm:py-14"
@@ -106,8 +109,8 @@ const About = () => {
             >
               {teamMembers.map((member, i) => (
                 <div key={member.id} className="rounded-2xl overflow-hidden bg-white border border-[#e1e1e1] shadow-sm">
-                  {member.photo ? (
-                    <img src={member.photo} alt={member.name} className="w-full aspect-square object-cover" />
+                  {member.photo1 ? (
+                    <img src={member.photo1} alt={member.name} className="w-full aspect-square object-cover" />
                   ) : (
                     <PhotoPlaceholder label={`${member.name} – photo soon`} square />
                   )}
@@ -147,8 +150,8 @@ const About = () => {
                 transition={{ duration: 0.4, delay: index * 0.08 }}
               >
                 <div className="w-full lg:w-72 shrink-0">
-                  {member.photo ? (
-                    <img src={member.photo} alt={member.name} className="w-full aspect-3/4 rounded-2xl object-cover" />
+                  {member.photo2 ? (
+                    <img src={member.photo2} alt={member.name} className="w-full aspect-3/4 rounded-2xl object-cover" />
                   ) : (
                     <PhotoPlaceholder />
                   )}

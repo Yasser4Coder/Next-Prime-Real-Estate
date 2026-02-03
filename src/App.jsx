@@ -10,6 +10,7 @@ import { DashboardStoreProvider } from './context/DashboardStore'
 
 const Home = lazy(() => import('./pages/home/Home'))
 const About = lazy(() => import('./pages/about/About'))
+const Services = lazy(() => import('./pages/services/Services'))
 const Properties = lazy(() => import('./pages/properties/Properties'))
 const PropertyDetails = lazy(() => import('./pages/properties/PropertyDetails'))
 import Login from './pages/dashboard/Login'
@@ -66,6 +67,7 @@ function App() {
             <Routes location={location} key={location.pathname}>
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
+              <Route path="/services" element={<Services />} />
               <Route path="/properties" element={<Properties />} />
               <Route path="/properties/:id" element={<PropertyDetails />} />
             </Routes>

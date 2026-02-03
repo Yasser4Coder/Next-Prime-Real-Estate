@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Map, Marker } from 'pigeon-maps'
-import { FaArrowLeft, FaChevronLeft, FaChevronRight, FaTimes, FaPhoneAlt, FaWhatsapp, FaRegCalendarAlt, FaRegClock, FaStar } from 'react-icons/fa'
+import { FaArrowLeft, FaChevronLeft, FaChevronRight, FaTimes, FaPhoneAlt, FaWhatsapp, FaDownload } from 'react-icons/fa'
 import Header from '../../components/Header'
 import Button from '../../components/Button'
 import allPropertiesData from './data/allPropertiesData'
@@ -73,6 +73,8 @@ function normalizeProperty(p) {
   return {
     ...p,
     photos: photosFinal,
+    floorPlanFile: (p.floorPlanFile && typeof p.floorPlanFile === 'string' && p.floorPlanFile.trim()) ? p.floorPlanFile.trim() : null,
+    brochureFile: (p.brochureFile && typeof p.brochureFile === 'string' && p.brochureFile.trim()) ? p.brochureFile.trim() : null,
     address: p.address && typeof p.address === 'object' ? p.address : tryJson(p.address, null) || { line1: p.location || 'Dubai', city: 'Dubai', country: 'UAE', lat: 25.2, lng: 55.3 },
     overview: toOverview(p.overview),
     highlights: toHighlights(p.highlights),
@@ -401,57 +403,61 @@ const PropertyDetails = () => {
               </div>
             </section>
 
-            {/* Floor Plans */}
-            <section aria-label="Floor Plans">
-              <h2 className="text-2xl font-semibold text-black mb-3">Floor Plans</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {(property.floorPlans ?? []).map((fp) => (
-                  <div key={fp.id} className="bg-[#FCFCFD] border border-[#e1e1e1] rounded-2xl overflow-hidden">
-                    <div className="p-4 border-b border-[#e1e1e1]">
-                      <p className="font-semibold text-black">{fp.title}</p>
-                    </div>
-                    <img src={fp.image} alt={`${property.title} ${fp.title}`} className="w-full h-56 object-cover" />
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Reviews */}
-            <section aria-label="Reviews">
-              <h2 className="text-2xl font-semibold text-black mb-3">Reviews</h2>
-              <div className="bg-[#FCFCFD] border border-[#e1e1e1] rounded-2xl p-5 sm:p-6">
-                <p className="text-[#717171]">
-                  <span className="font-medium text-black">Note:</span> You need to login in order to post a review.
-                </p>
-                <div className="mt-4 flex flex-col sm:flex-row gap-3">
-                  <Button text="Login to review" className="sm:w-auto" />
-                  <Button text="Create account" transparent className="sm:w-auto" />
-                </div>
-                <div className="mt-6 space-y-4">
-                  {(property.reviews ?? []).length === 0 ? (
-                    <p className="text-[#717171]">No reviews yet.</p>
-                  ) : (
-                    property.reviews.map((r) => (
-                      <div key={r.id} className="bg-white border border-[#e1e1e1] rounded-xl p-4">
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="font-semibold text-black">{r.name}</p>
-                          <div className="flex items-center gap-1 text-[#C9A24D]" aria-label={`${r.rating} out of 5 stars`}>
-                            {Array.from({ length: r.rating }).map((_, i) => (
-                              <FaStar key={i} className="w-4 h-4" aria-hidden />
-                            ))}
-                          </div>
-                        </div>
-                        <p className="text-[#717171] mt-2">{r.text}</p>
-                        <p className="text-xs text-[#999] mt-2">{r.date}</p>
+            {/* Floor Plans & Downloads */}
+            <section aria-label="Floor Plans and Downloads">
+              <h2 className="text-2xl font-semibold text-black mb-3">Floor Plans &amp; Documents</h2>
+              {(property.floorPlans ?? []).length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                  {(property.floorPlans ?? []).map((fp) => (
+                    <div key={fp.id} className="bg-[#FCFCFD] border border-[#e1e1e1] rounded-2xl overflow-hidden">
+                      <div className="p-4 border-b border-[#e1e1e1]">
+                        <p className="font-semibold text-black">{fp.title}</p>
                       </div>
-                    ))
-                  )}
+                      <img src={fp.image} alt={`${property.title} ${fp.title}`} className="w-full h-56 object-cover" />
+                    </div>
+                  ))}
                 </div>
+              )}
+              <div className="bg-[#FCFCFD] border border-[#e1e1e1] rounded-2xl p-5 sm:p-6">
+                <h3 className="text-lg font-semibold text-black mb-3">Download</h3>
+                {property.floorPlanFile || property.brochureFile ? (
+                  <>
+                    <p className="text-sm text-[#717171] mb-3">Floor plan and brochure PDFs.</p>
+                    <div className="flex flex-wrap gap-3">
+                      {property.floorPlanFile && (
+                        <a
+                          href={property.floorPlanFile}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download
+                          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B8862E] text-white text-sm font-medium hover:bg-[#A67C2A] transition-colors"
+                        >
+                          <FaDownload className="w-4 h-4" />
+                          Floor plan (PDF)
+                        </a>
+                      )}
+                      {property.brochureFile && (
+                        <a
+                          href={property.brochureFile}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download
+                          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#262626] text-white text-sm font-medium hover:bg-black transition-colors"
+                        >
+                          <FaDownload className="w-4 h-4" />
+                          Brochure (PDF)
+                        </a>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-[#717171]">No floor plan or brochure PDFs for this property yet. Add them in Dashboard → Properties → Edit (Floor plan PDF / Brochure PDF).</p>
+                )}
               </div>
             </section>
           </div>
 
-          {/* Sidebar: Contact + Schedule tour */}
+          {/* Sidebar: Contact Me */}
           <aside className="lg:col-span-4 space-y-6">
             {/* Contact Me */}
             <section aria-label="Contact Me" className="bg-[#262626] text-white rounded-2xl p-5 sm:p-6">
@@ -472,42 +478,6 @@ const PropertyDetails = () => {
               <div className="mt-5">
                 <Button text="Request Info" fullWidth className="w-full" />
               </div>
-            </section>
-
-            {/* Schedule a tour */}
-            <section aria-label="Schedule a tour" className="bg-[#FCFCFD] border border-[#e1e1e1] rounded-2xl p-5 sm:p-6">
-              <h2 className="text-xl font-semibold text-black">Schedule a tour</h2>
-              <p className="text-[#717171] text-sm mt-2">
-                Choose a date and time. We’ll confirm availability shortly.
-              </p>
-              <form className="mt-4 space-y-3">
-                <label className="block">
-                  <span className="text-xs font-medium text-[#666] flex items-center gap-2 mb-1">
-                    <FaRegCalendarAlt className="w-4 h-4" /> Date
-                  </span>
-                  <input type="date" className="w-full px-3 py-2.5 bg-white border border-[#e1e1e1] rounded-xl text-sm text-black focus:border-[#B8862E] focus:outline-none cursor-pointer" />
-                </label>
-                <label className="block">
-                  <span className="text-xs font-medium text-[#666] flex items-center gap-2 mb-1">
-                    <FaRegClock className="w-4 h-4" /> Time
-                  </span>
-                  <input type="time" className="w-full px-3 py-2.5 bg-white border border-[#e1e1e1] rounded-xl text-sm text-black focus:border-[#B8862E] focus:outline-none cursor-pointer" />
-                </label>
-                <label className="block">
-                  <span className="text-xs font-medium text-[#666] mb-1 block">Name</span>
-                  <input type="text" placeholder="Your name" className="w-full px-3 py-2.5 bg-white border border-[#e1e1e1] rounded-xl text-sm text-black focus:border-[#B8862E] focus:outline-none" />
-                </label>
-                <label className="block">
-                  <span className="text-xs font-medium text-[#666] mb-1 block">Phone</span>
-                  <input type="tel" placeholder="+971..." className="w-full px-3 py-2.5 bg-white border border-[#e1e1e1] rounded-xl text-sm text-black focus:border-[#B8862E] focus:outline-none" />
-                </label>
-                <div className="pt-2">
-                  <Button text="Request Tour" fullWidth className="w-full" />
-                </div>
-                <p className="text-xs text-[#999]">
-                  By submitting, you agree to be contacted by Next Prime Real Estate.
-                </p>
-              </form>
             </section>
           </aside>
         </div>

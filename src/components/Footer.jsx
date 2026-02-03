@@ -34,11 +34,12 @@ const footerColumns = [
   {
     title: 'Services',
     links: [
-      { to: '/#services', label: 'Valuation Mastery' },
-      { to: '/#services', label: 'Strategic Marketing' },
-      { to: '/#services', label: 'Negotiation Wizardry' },
-      { to: '/#services', label: 'Closing Success' },
-      { to: '/#services', label: 'Property Management' },
+      { to: '/services', label: 'Off-plan Investment' },
+      { to: '/services', label: 'Buy & Sell' },
+      { to: '/services', label: 'Property Valuation' },
+      { to: '/services', label: 'Strategic Marketing' },
+      { to: '/services', label: 'Negotiation & Closing' },
+      { to: '/services', label: 'Property Management' },
     ],
   },
   {

@@ -9,7 +9,7 @@ import { useSiteData } from '../context/DashboardStore'
 const navLinks = [
   { path: '/', label: 'Home' },
   { path: '/properties', label: 'Properties' },
-  { path: '/#services', label: 'Services' },
+  { path: '/services', label: 'Services' },
   { path: '/about', label: 'About' },
 ]
 
@@ -27,6 +27,7 @@ const Header = () => {
   const isActive = (path) => {
     if (path === '/') return location.pathname === '/'
     if (path === '/properties') return location.pathname === '/properties'
+    if (path === '/services') return location.pathname === '/services'
     if (path === '/about') return location.pathname === '/about'
     return false
   }

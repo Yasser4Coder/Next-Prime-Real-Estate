@@ -12,6 +12,7 @@ import KeyStats from './sections/KeyStats'
 import { setSeoMeta } from '../../utils/seo'
 import { fadeIn } from '../../utils/motion'
 import CtaSection from './sections/CtaSection'
+import ContactSection from './sections/ContactSection'
 
 const Home = () => {
   useEffect(() => {
@@ -35,6 +36,7 @@ const Home = () => {
       <WhatOurClientsSay />
       <KeyStats />
       <CtaSection />
+      <ContactSection />
     </motion.div>
   )
 }

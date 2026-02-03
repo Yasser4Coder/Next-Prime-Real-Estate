@@ -20,6 +20,7 @@ export default function PropertiesManage() {
     overviewAreaSqft: '', overviewStatus: '', overviewYearBuilt: '', overviewGarages: '',
     highlights: '',
     agentName: '', agentPhone: '', agentEmail: '',
+    floorPlanFile: '', brochureFile: '',
   })
   const [residenceOptionsList, setResidenceOptionsList] = useState([])
   const [featuresList, setFeaturesList] = useState([])
@@ -29,6 +30,8 @@ export default function PropertiesManage() {
   const [galleryFiles, setGalleryFiles] = useState([])
   const [mainPreview, setMainPreview] = useState(null)
   const [galleryPreviews, setGalleryPreviews] = useState([])
+  const [floorPlanUpload, setFloorPlanUpload] = useState(null)
+  const [brochureUpload, setBrochureUpload] = useState(null)
 
   const tryParseJson = (v, fallback) => {
     if (v == null) return fallback
@@ -133,6 +136,7 @@ export default function PropertiesManage() {
       overviewAreaSqft: '', overviewStatus: '', overviewYearBuilt: '', overviewGarages: '',
       highlights: '',
       agentName: '', agentPhone: '', agentEmail: '',
+      floorPlanFile: '', brochureFile: '',
     })
     setResidenceOptionsList([])
     setFeaturesList([])
@@ -142,6 +146,8 @@ export default function PropertiesManage() {
     setGalleryFiles([])
     setMainPreview(null)
     setGalleryPreviews([])
+    setFloorPlanUpload(null)
+    setBrochureUpload(null)
     setEditing(null)
   }
 
@@ -193,6 +199,8 @@ export default function PropertiesManage() {
       description: form.description,
       image: imageUrl,
       photos: fullPhotoStr,
+      floorPlanFile: form.floorPlanFile?.trim() || null,
+      brochureFile: form.brochureFile?.trim() || null,
       bedrooms: form.bedrooms,
       bathrooms: form.bathrooms,
       type: form.type,
@@ -244,6 +252,10 @@ export default function PropertiesManage() {
     fd.append('agentName', form.agentName ?? '')
     fd.append('agentPhone', form.agentPhone ?? '')
     fd.append('agentEmail', form.agentEmail ?? '')
+    if (floorPlanUpload) fd.append('floorPlanFile', floorPlanUpload)
+    else fd.append('floorPlanFile', form.floorPlanFile?.trim() ?? '')
+    if (brochureUpload) fd.append('brochureFile', brochureUpload)
+    else fd.append('brochureFile', form.brochureFile?.trim() ?? '')
     if (mainImageFile) {
       fd.set('image', mainImageFile)
     }
@@ -257,7 +269,7 @@ export default function PropertiesManage() {
     if (useApi()) {
       setSaving(true)
       try {
-        const hasFiles = mainImageFile || galleryFiles.length > 0
+        const hasFiles = mainImageFile || galleryFiles.length > 0 || floorPlanUpload || brochureUpload
         const body = hasFiles ? buildFormData() : payload
         if (editing) {
           await api.updateProperty(editing.id, body)
@@ -282,6 +294,8 @@ export default function PropertiesManage() {
         ...payload,
         image: payload.image,
         photos: photoUrls.length ? photoUrls : [payload.image],
+        floorPlanFile: payload.floorPlanFile || null,
+        brochureFile: payload.brochureFile || null,
         bedrooms: Number(payload.bedrooms) || 0,
         bathrooms: Number(payload.bathrooms) || 0,
         price: Number(payload.price) || 0,
@@ -347,7 +361,11 @@ export default function PropertiesManage() {
       agentName: ag.name ?? '',
       agentPhone: ag.phone ?? '',
       agentEmail: ag.email ?? '',
+      floorPlanFile: (p.floorPlanFile && typeof p.floorPlanFile === 'string') ? p.floorPlanFile : '',
+      brochureFile: (p.brochureFile && typeof p.brochureFile === 'string') ? p.brochureFile : '',
     })
+    setFloorPlanUpload(null)
+    setBrochureUpload(null)
     setResidenceOptionsList(Array.isArray(resOpts) && resOpts.length
       ? resOpts.map((r) => ({ label: r.label || '', items: Array.isArray(r.items) ? r.items.join(', ') : (r.items || '') }))
       : [])
@@ -383,7 +401,7 @@ export default function PropertiesManage() {
 
   const openAddForm = () => {
     setEditing(null)
-    setForm({ title: '', description: '', image: '', bedrooms: '', bathrooms: '', type: 'Villa', price: '', location: '', purpose: 'buy', photos: '', addressLine1: '', addressCity: 'Dubai', addressCountry: 'UAE', addressLat: '', addressLng: '', overviewAreaSqft: '', overviewStatus: '', overviewYearBuilt: '', overviewGarages: '', highlights: '', agentName: '', agentPhone: '', agentEmail: '' })
+    setForm({ title: '', description: '', image: '', bedrooms: '', bathrooms: '', type: 'Villa', price: '', location: '', purpose: 'buy', photos: '', addressLine1: '', addressCity: 'Dubai', addressCountry: 'UAE', addressLat: '', addressLng: '', overviewAreaSqft: '', overviewStatus: '', overviewYearBuilt: '', overviewGarages: '', highlights: '', agentName: '', agentPhone: '', agentEmail: '', floorPlanFile: '', brochureFile: '' })
     setResidenceOptionsList([])
     setFeaturesList([])
     setFloorPlansList([])
@@ -392,6 +410,8 @@ export default function PropertiesManage() {
     setGalleryFiles([])
     setMainPreview(null)
     setGalleryPreviews([])
+    setFloorPlanUpload(null)
+    setBrochureUpload(null)
     setShowFormView(true)
   }
 
@@ -408,11 +428,12 @@ export default function PropertiesManage() {
             </button>
           </div>
           <form onSubmit={handleSave} className="p-4 bg-[#fafafa] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <p className="sm:col-span-2 lg:col-span-3 text-xs text-[#717171] mb-2">Max 50MB per file (images and PDFs).</p>
           <input type="text" placeholder="Title" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} className="px-3 py-2 rounded-xl border border-[#e1e1e1]" required />
           <div className="sm:col-span-2 lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#262626] mb-1">Hero image (shown first on listing)</label>
-              <p className="text-xs text-[#717171] mb-2">Upload one image or paste a URL below.</p>
+              <p className="text-xs text-[#717171] mb-2">Upload one image (max 50MB) or paste a URL below.</p>
               <input type="text" placeholder="Paste image URL (optional)" value={form.image} onChange={(e) => setForm((f) => ({ ...f, image: e.target.value }))} className="w-full px-3 py-2 rounded-xl border border-[#e1e1e1] mb-2" />
               <label className="flex flex-col gap-1 cursor-pointer">
                 <span className="text-xs text-[#717171]">Or upload a file</span>
@@ -429,7 +450,7 @@ export default function PropertiesManage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-[#262626] mb-1">Additional photos (gallery)</label>
-              <p className="text-xs text-[#717171] mb-2">Upload up to 10 images and/or add URLs below (one per line). All are shown in the property gallery.</p>
+              <p className="text-xs text-[#717171] mb-2">Upload up to 10 images (max 50MB each) and/or add URLs below (one per line). All are shown in the property gallery.</p>
               <input ref={galleryInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple onChange={handleGalleryChange} className="w-full text-sm text-[#717171] file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-[#B8862E] file:text-white file:cursor-pointer" />
               <div className="flex flex-wrap gap-2 mt-2">
                 {existingGalleryUrls.length > 0 && existingGalleryUrls.map((url, i) => (
@@ -448,6 +469,22 @@ export default function PropertiesManage() {
               <label className="block text-xs text-[#717171] mt-2 mb-1">Or add image URLs (one per line)</label>
               <textarea placeholder="https://example.com/photo1.jpg&#10;https://example.com/photo2.jpg" value={form.photos} onChange={(e) => setForm((f) => ({ ...f, photos: e.target.value }))} className="w-full px-3 py-2 rounded-xl border border-[#e1e1e1] text-sm" rows={2} />
               {(galleryPreviews.length > 0 || galleryFiles.length > 0) && <p className="text-xs text-[#717171] mt-1">{galleryFiles.length} new image(s) will be uploaded</p>}
+            </div>
+          </div>
+          <div className="sm:col-span-2 lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-[#e1e1e1] pt-4">
+            <div>
+              <label className="block text-sm font-medium text-[#262626] mb-1">Floor plan (PDF)</label>
+              <p className="text-xs text-[#717171] mb-2">Paste a direct PDF URL or upload a file (max 50MB) for users to download.</p>
+              <input type="url" placeholder="https://example.com/floor-plan.pdf" value={form.floorPlanFile} onChange={(e) => setForm((f) => ({ ...f, floorPlanFile: e.target.value }))} className="w-full px-3 py-2 rounded-xl border border-[#e1e1e1] mb-2 text-sm" />
+              <input type="file" accept="application/pdf" onChange={(e) => { setFloorPlanUpload(e.target.files?.[0] || null) }} className="w-full text-sm text-[#717171] file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-[#B8862E] file:text-white file:cursor-pointer" />
+              {floorPlanUpload && <p className="text-xs text-[#717171] mt-1">New file: {floorPlanUpload.name} (will replace URL above on save)</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#262626] mb-1">Brochure (PDF)</label>
+              <p className="text-xs text-[#717171] mb-2">Paste a direct PDF URL or upload a file (max 50MB) for users to download.</p>
+              <input type="url" placeholder="https://example.com/brochure.pdf" value={form.brochureFile} onChange={(e) => setForm((f) => ({ ...f, brochureFile: e.target.value }))} className="w-full px-3 py-2 rounded-xl border border-[#e1e1e1] mb-2 text-sm" />
+              <input type="file" accept="application/pdf" onChange={(e) => { setBrochureUpload(e.target.files?.[0] || null) }} className="w-full text-sm text-[#717171] file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-[#B8862E] file:text-white file:cursor-pointer" />
+              {brochureUpload && <p className="text-xs text-[#717171] mt-1">New file: {brochureUpload.name} (will replace URL above on save)</p>}
             </div>
           </div>
           <input type="text" placeholder="Location" value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} className="px-3 py-2 rounded-xl border border-[#e1e1e1]" />
