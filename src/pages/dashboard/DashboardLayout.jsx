@@ -8,6 +8,7 @@ const nav = [
   { to: '/dashboard/locations', label: 'Locations / Areas' },
   { to: '/dashboard/featured', label: 'Featured Properties' },
   { to: '/dashboard/developers', label: 'Developers / Promoters' },
+  { to: '/dashboard/download-leads', label: 'Download Leads' },
   { to: '/dashboard/contact', label: 'Contact Info' },
   { to: '/dashboard/social', label: 'Social Media' },
 ]

@@ -40,6 +40,11 @@ const defaultLocationsListRent = [
   'Business Bay', 'Arabian Ranches', 'Dubai Hills Estate', 'Jumeirah Village Circle',
   'Dubai Creek Harbour', 'Emaar Beachfront',
 ]
+const defaultLocationsListOffPlan = [
+  'Dubai Marina', 'Downtown Dubai', 'Palm Jumeirah', 'JBR (Jumeirah Beach Residence)',
+  'Business Bay', 'Arabian Ranches', 'Dubai Hills Estate', 'Jumeirah Village Circle',
+  'Dubai Creek Harbour', 'Emaar Beachfront',
+]
 
 const defaultDevelopers = [
   { id: 1, name: 'Damac', logoUrl: '', link: '' },
@@ -78,6 +83,7 @@ const getDefaultState = () => ({
   areas: defaultAreas,
   locationsListBuy: defaultLocationsListBuy,
   locationsListRent: defaultLocationsListRent,
+  locationsListOffPlan: defaultLocationsListOffPlan,
   featuredPropertyIds: [],
   contact: defaultContact,
   socialLinks: defaultSocial,
@@ -88,10 +94,10 @@ const DashboardStoreContext = createContext(null)
 
 export function DashboardStoreProvider({ children }) {
   const [state, setState] = useState(() => {
-    if (useApi()) return getDefaultState()
+    if (useApi()) return { ...getDefaultState(), siteDataLoaded: false }
     const stored = loadFromStorage()
-    if (stored) return { ...getDefaultState(), ...stored }
-    return getDefaultState()
+    if (stored) return { ...getDefaultState(), ...stored, siteDataLoaded: true }
+    return { ...getDefaultState(), siteDataLoaded: true }
   })
 
   useEffect(() => {
@@ -105,13 +111,17 @@ export function DashboardStoreProvider({ children }) {
             areas: data.areas ?? prev.areas,
             locationsListBuy: data.locationsBuy ?? prev.locationsListBuy,
             locationsListRent: data.locationsRent ?? prev.locationsListRent,
+            locationsListOffPlan: data.locationsOffPlan ?? prev.locationsListOffPlan,
             contact: data.contact ?? prev.contact,
             socialLinks: data.socialLinks ?? prev.socialLinks,
             featuredPropertyIds: data.featuredPropertyIds ?? prev.featuredPropertyIds,
             developers: data.developers ?? prev.developers,
+            siteDataLoaded: true,
           }))
         })
-        .catch(() => {})
+        .catch(() => {
+          setState((prev) => ({ ...prev, siteDataLoaded: true }))
+        })
     }
   }, [])
 
@@ -128,6 +138,7 @@ export function DashboardStoreProvider({ children }) {
   const setAreas = useCallback((list) => update('areas', list), [update])
   const setLocationsListBuy = useCallback((list) => update('locationsListBuy', list), [update])
   const setLocationsListRent = useCallback((list) => update('locationsListRent', list), [update])
+  const setLocationsListOffPlan = useCallback((list) => update('locationsListOffPlan', list), [update])
   const setFeaturedPropertyIds = useCallback((ids) => update('featuredPropertyIds', ids), [update])
   const setContact = useCallback((data) => update('contact', data), [update])
   const setSocialLinks = useCallback((list) => update('socialLinks', list), [update])
@@ -144,13 +155,14 @@ export function DashboardStoreProvider({ children }) {
     setAreas,
     setLocationsListBuy,
     setLocationsListRent,
+    setLocationsListOffPlan,
     setFeaturedPropertyIds,
     setContact,
     setSocialLinks,
     setDevelopers,
     resetToDefaults,
     update,
-  }), [state, setProperties, setTestimonials, setAreas, setLocationsListBuy, setLocationsListRent, setFeaturedPropertyIds, setContact, setSocialLinks, setDevelopers, resetToDefaults, update])
+  }), [state, setProperties, setTestimonials, setAreas, setLocationsListBuy, setLocationsListRent, setLocationsListOffPlan, setFeaturedPropertyIds, setContact, setSocialLinks, setDevelopers, resetToDefaults, update])
 
   return (
     <DashboardStoreContext.Provider value={value}>

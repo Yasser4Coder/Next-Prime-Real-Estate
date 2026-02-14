@@ -42,6 +42,20 @@ export async function getPropertyPublic(id) {
   return request(`/api/properties/${id}`)
 }
 
+/** Submit download lead form (public, no auth) */
+export async function submitDownloadLead(data) {
+  const base = getBaseUrl().replace(/\/$/, '')
+  if (!base) return Promise.reject(new Error('No API URL configured'))
+  const res = await fetch(`${base}/api/download-leads`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`)
+  return json
+}
+
 // ——— Auth ———
 export async function login(email, password) {
   const body = { email: email?.trim() || 'admin', password }
@@ -153,14 +167,15 @@ export async function getLocationsList() {
 }
 
 export async function addLocation(name, purpose = 'buy') {
+  const p = ['buy', 'rent', 'off-plan'].includes(purpose) ? purpose : 'buy'
   return request('/api/admin/locations-list', {
     method: 'POST',
-    body: JSON.stringify({ name, purpose: purpose === 'rent' ? 'rent' : 'buy' }),
+    body: JSON.stringify({ name, purpose: p }),
   })
 }
 
 export async function removeLocation(name, purpose = 'buy') {
-  const p = purpose === 'rent' ? 'rent' : 'buy'
+  const p = ['buy', 'rent', 'off-plan'].includes(purpose) ? purpose : 'buy'
   return request(`/api/admin/locations-list/${encodeURIComponent(name)}?purpose=${p}`, { method: 'DELETE' })
 }
 
@@ -202,6 +217,22 @@ export async function setFeatured(ids) {
     method: 'PUT',
     body: JSON.stringify({ ids }),
   })
+}
+
+// ——— Admin: Download Leads ———
+export async function getDownloadLeads() {
+  return request('/api/admin/download-leads')
+}
+
+export async function updateDownloadLead(id, body) {
+  return request(`/api/admin/download-leads/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  })
+}
+
+export async function deleteDownloadLead(id) {
+  return request(`/api/admin/download-leads/${id}`, { method: 'DELETE' })
 }
 
 export function isUsingApi() {

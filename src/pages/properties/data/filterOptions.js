@@ -2,6 +2,7 @@
 export const PURPOSE_OPTIONS = [
   { value: 'buy', label: 'Buy' },
   { value: 'rent', label: 'Rent' },
+  { value: 'off-plan', label: 'Off Plan' },
 ]
 
 export const LOCATIONS = [
@@ -85,6 +86,10 @@ export const PRICE_MAX_OPTIONS_RENT = [
   { value: '500000', label: '500K AED/year', min: null, max: 500000 },
   { value: '-', label: '500K+ AED/year', min: null, max: null },
 ]
+
+// Off-plan uses same price ranges as buy
+export const PRICE_RANGES_OFF_PLAN = PRICE_RANGES_BUY
+export const PRICE_MAX_OPTIONS_OFF_PLAN = PRICE_MAX_OPTIONS_BUY
 
 export const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest' },

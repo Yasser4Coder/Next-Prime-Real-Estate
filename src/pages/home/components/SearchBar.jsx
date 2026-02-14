@@ -15,6 +15,7 @@ const LISTING_TYPES = [
   { key: 'rent', label: 'Rent' },
   { key: 'buy', label: 'Buy' },
   { key: 'sell', label: 'Sell' },
+  { key: 'off-plan', label: 'Off Plan' },
 ]
 
 const SearchBar = () => {
@@ -29,8 +30,9 @@ const SearchBar = () => {
 
   const LOCATIONS_BUY = (siteData?.locationsListBuy?.length ? siteData.locationsListBuy : FALLBACK_LOCATIONS)
   const LOCATIONS_RENT = (siteData?.locationsListRent?.length ? siteData.locationsListRent : FALLBACK_LOCATIONS)
-  const LOCATIONS = listingType === 'rent' ? LOCATIONS_RENT : LOCATIONS_BUY
-  const priceRanges = listingType === 'rent' ? PRICE_RANGES_RENT : PRICE_RANGES_BUY
+  const LOCATIONS_OFF_PLAN = (siteData?.locationsListOffPlan?.length ? siteData.locationsListOffPlan : FALLBACK_LOCATIONS)
+  const LOCATIONS = listingType === 'rent' ? LOCATIONS_RENT : listingType === 'off-plan' ? LOCATIONS_OFF_PLAN : LOCATIONS_BUY
+  const priceRanges = listingType === 'rent' ? PRICE_RANGES_RENT : (listingType === 'off-plan' || listingType === 'sell') ? PRICE_RANGES_BUY : PRICE_RANGES_BUY
 
   useEffect(() => {
     setPriceRange('')
@@ -54,7 +56,7 @@ const SearchBar = () => {
   const closeDropdown = () => setOpenDropdown(null)
 
   const handleSearch = () => {
-    const purpose = listingType === 'sell' ? 'buy' : listingType
+    const purpose = listingType === 'sell' ? 'buy' : listingType === 'off-plan' ? 'off-plan' : listingType
     const searchParams = new URLSearchParams()
     searchParams.set('purpose', purpose)
     if (location) searchParams.set('location', location)
@@ -73,7 +75,7 @@ const SearchBar = () => {
       const map = { '0-50000': '50000', '50000-100000': '100000', '100000-200000': '200000', '200000-500000': '500000', '500000-': '-' }
       return map[rangeValue] ?? ''
     }
-    if (purpose === 'buy') {
+    if (purpose === 'buy' || purpose === 'off-plan') {
       const map = { '0-500000': '500000', '500000-1000000': '1000000', '1000000-2000000': '2000000', '2000000-5000000': '5000000', '5000000-': '-' }
       return map[rangeValue] ?? ''
     }

@@ -88,7 +88,7 @@ export default function FeaturedManage() {
                 <li key={p.id} className="p-4 flex items-center justify-between gap-4">
                   <div>
                     <p className="font-medium text-[#262626]">{p.title}</p>
-                    <p className="text-sm text-[#717171]">{p.type} · {p.location} · {p.price?.toLocaleString?.() ?? p.price} AED</p>
+                    <p className="text-sm text-[#717171]">{p.type} · {p.location} · {p.priceDisplay && String(p.priceDisplay).trim() ? p.priceDisplay : (p.price != null && Number(p.price) > 0 ? `${Number(p.price).toLocaleString()} AED` : '—')}</p>
                   </div>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={isFeatured} onChange={() => toggle(p.id)} disabled={saving} className="rounded border-[#e1e1e1] text-[#B8862E] focus:ring-[#B8862E]" />

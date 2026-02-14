@@ -5,16 +5,23 @@ import { Map, Marker } from 'pigeon-maps'
 import { FaArrowLeft, FaChevronLeft, FaChevronRight, FaTimes, FaPhoneAlt, FaWhatsapp, FaDownload } from 'react-icons/fa'
 import Header from '../../components/Header'
 import Button from '../../components/Button'
+import DownloadLeadModal from '../../components/DownloadLeadModal'
 import allPropertiesData from './data/allPropertiesData'
 import { useSiteData } from '../../context/DashboardStore'
 import { getPropertyPublic } from '../../api/client'
 import { setSeoMeta } from '../../utils/seo'
 import { fadeIn } from '../../utils/motion'
+import { getPropertySlug, slugify } from '../../utils/slug'
 
 const useApi = () => !!import.meta.env.VITE_API_URL
 
 const formatAed = (value) =>
-  new Intl.NumberFormat('en-AE', { style: 'currency', currency: 'AED', maximumFractionDigits: 0 }).format(value)
+  new Intl.NumberFormat('en-AE', { style: 'currency', currency: 'AED', maximumFractionDigits: 0 }).format(Number(value) || 0)
+
+const formatPrice = (p) => {
+  if (p?.priceDisplay && String(p.priceDisplay).trim()) return String(p.priceDisplay).trim()
+  return p?.price != null && Number(p.price) > 0 ? formatAed(p.price) : '—'
+}
 
 function tryJson(s, fallback) {
   if (s == null || typeof s !== 'string' || !s.trim()) return fallback
@@ -70,8 +77,13 @@ function normalizeProperty(p) {
   const photos = toPhotos(p.photos, p.image)
   const photosFinal = photos.length ? photos : (p.image && typeof p.image === 'string' ? [p.image] : [])
 
+  const bedroomsStr = p.bedrooms != null && String(p.bedrooms).trim() !== '' ? String(p.bedrooms).trim() : null
+  const bathroomsStr = p.bathrooms != null && String(p.bathrooms).trim() !== '' ? String(p.bathrooms).trim() : null
+
   return {
     ...p,
+    bedrooms: bedroomsStr,
+    bathrooms: bathroomsStr,
     photos: photosFinal,
     floorPlanFile: (p.floorPlanFile && typeof p.floorPlanFile === 'string' && p.floorPlanFile.trim()) ? p.floorPlanFile.trim() : null,
     brochureFile: (p.brochureFile && typeof p.brochureFile === 'string' && p.brochureFile.trim()) ? p.brochureFile.trim() : null,
@@ -86,8 +98,7 @@ function normalizeProperty(p) {
 }
 
 const PropertyDetails = () => {
-  const { id } = useParams()
-  const propertyId = Number(id)
+  const { slug: slugOrId } = useParams()
   const siteData = useSiteData()
   const list = siteData?.properties?.length ? siteData.properties : allPropertiesData
   const [fetchedProperty, setFetchedProperty] = useState(null)
@@ -95,41 +106,49 @@ const PropertyDetails = () => {
   const [fetchError, setFetchError] = useState(false)
 
   useEffect(() => {
-    if (!useApi() || !id) {
+    if (!useApi() || !slugOrId) {
       setFetchLoading(false)
       return
     }
     setFetchLoading(true)
     setFetchError(false)
-    getPropertyPublic(id)
+    getPropertyPublic(slugOrId)
       .then((data) => {
         setFetchedProperty(normalizeProperty(data))
         setFetchError(false)
       })
       .catch(() => setFetchError(true))
       .finally(() => setFetchLoading(false))
-  }, [id])
+  }, [slugOrId])
 
   const property = useMemo(() => {
+    const isNumeric = /^\d+$/.test(String(slugOrId || ''))
+    const findInList = (arr) => {
+      if (isNumeric) return arr.find((x) => Number(x.id) === Number(slugOrId))
+      return arr.find(
+        (x) => x.slug === slugOrId || slugify(x.title) === slugOrId
+      )
+    }
     if (useApi()) {
       if (fetchedProperty) return fetchedProperty
       if (fetchLoading) return null
-      const fromList = list.find((x) => Number(x.id) === propertyId)
+      const fromList = findInList(list)
       return fromList ? normalizeProperty(fromList) : null
     }
-    const p = list.find((x) => Number(x.id) === propertyId)
+    const p = findInList(list)
     return p ? normalizeProperty(p) : null
-  }, [useApi(), fetchedProperty, fetchLoading, list, propertyId])
+  }, [useApi(), fetchedProperty, fetchLoading, list, slugOrId])
 
   const [activePhotoIndex, setActivePhotoIndex] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+  const [downloadModal, setDownloadModal] = useState(null) // { documentType, downloadUrl } or null
 
   useEffect(() => {
     if (!property) return
     setSeoMeta({
       title: `${property.title} | Dubai Property | Next Prime Real Estate`,
       description: property.description,
-      canonical: `https://www.nextprimerealestate.com/properties/${property.id}`,
+      canonical: `https://www.nextprimerealestate.com/properties/${getPropertySlug(property) || property.id}`,
     })
   }, [property])
 
@@ -221,14 +240,16 @@ const PropertyDetails = () => {
             <div>
               <div className="inline-flex items-center gap-2 text-sm text-[#666] mb-2">
                 <span className="px-3 py-1 rounded-full border border-[#e1e1e1] bg-[#FCFCFD]">
-                  {property.purpose === 'rent' ? 'Rent' : 'Buy'}
+                  {property.purpose === 'rent' ? 'Rent' : property.purpose === 'off-plan' ? 'Off Plan' : 'Buy'}
                 </span>
                 <span className="px-3 py-1 rounded-full border border-[#e1e1e1] bg-[#FCFCFD]">
                   {property.type}
                 </span>
-                <span className="px-3 py-1 rounded-full border border-[#e1e1e1] bg-[#FCFCFD]">
-                  {property.bedrooms} BR
-                </span>
+                {(property.bedrooms != null && String(property.bedrooms).trim()) ? (
+                  <span className="px-3 py-1 rounded-full border border-[#e1e1e1] bg-[#FCFCFD]">
+                    {String(property.bedrooms).trim()}
+                  </span>
+                ) : null}
               </div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-medium text-black leading-tight">
                 {property.title}
@@ -238,9 +259,11 @@ const PropertyDetails = () => {
               </p>
             </div>
             <div className="bg-[#262626] text-white rounded-2xl p-4 sm:p-5 w-full lg:w-auto">
-              <p className="text-sm text-white/70">Starting price</p>
+              <p className="text-sm text-white/70">Price (AED)</p>
               <p className="text-xl sm:text-2xl font-semibold mt-1">
-                {property.purpose === 'rent' ? `${formatAed(property.price)}/year` : formatAed(property.price)}
+                {property.purpose === 'rent' && !property.priceDisplay && property.price > 0
+                  ? `${formatAed(property.price)}/year`
+                  : formatPrice(property)}
               </p>
               <div className="mt-4">
                 <Button text="Contact Agent" fullWidth className="w-full" />
@@ -295,12 +318,39 @@ const PropertyDetails = () => {
               <div className="bg-[#FCFCFD] border border-[#e1e1e1] rounded-2xl p-5 sm:p-6">
                 <h2 className="text-xl font-semibold text-black">Overview</h2>
                 <div className="grid grid-cols-2 gap-3 mt-4">
-                  <OverviewItem label="Area" value={`${property.overview?.areaSqft ?? '—'} sqft`} />
-                  <OverviewItem label="Bedrooms" value={property.bedrooms} />
-                  <OverviewItem label="Bathrooms" value={property.bathrooms} />
+                  {property.overview?.areaText ? (
+                    <div className="col-span-2 bg-white border border-[#e1e1e1] rounded-xl p-3.5 sm:p-4">
+                      <p className="text-xs text-[#666]">Area (sqft)</p>
+                      <div className="text-sm sm:text-base font-medium text-black mt-1.5 space-y-1">
+                        {(property.overview.areaText || '')
+                          .split(/\r?\n/)
+                          .map((line) => line.trim())
+                          .filter(Boolean)
+                          .map((line, i) => (
+                            <p key={i} className="leading-snug">{line}</p>
+                          ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <OverviewItem label="Area (sqft)" value={property.overview?.areaSqft != null ? `${property.overview.areaSqft}` : '—'} />
+                  )}
+                  <OverviewItem label="Bedrooms" value={property.bedrooms != null && String(property.bedrooms).trim() ? String(property.bedrooms).trim() : '—'} />
+                  <OverviewItem label="Bathrooms" value={property.bathrooms != null && String(property.bathrooms).trim() ? String(property.bathrooms).trim() : '—'} />
                   <OverviewItem label="Status" value={property.overview?.status ?? '—'} />
                   <OverviewItem label="Year Built" value={property.overview?.yearBuilt ?? '—'} />
                   <OverviewItem label="Garages" value={property.overview?.garages ?? '—'} />
+                  {(property.overview?.buildingConfiguration ?? property.overview?.building_configuration) ? (
+                    <OverviewItem
+                      label="Building configuration"
+                      value={property.overview.buildingConfiguration ?? property.overview.building_configuration}
+                    />
+                  ) : null}
+                  {(property.overview?.projectType ?? property.overview?.project_type) ? (
+                    <OverviewItem
+                      label="Project Type"
+                      value={property.overview.projectType ?? property.overview.project_type}
+                    />
+                  ) : null}
                 </div>
               </div>
             </aside>
@@ -425,28 +475,24 @@ const PropertyDetails = () => {
                     <p className="text-sm text-[#717171] mb-3">Floor plan and brochure PDFs.</p>
                     <div className="flex flex-wrap gap-3">
                       {property.floorPlanFile && (
-                        <a
-                          href={property.floorPlanFile}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          download
-                          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B8862E] text-white text-sm font-medium hover:bg-[#A67C2A] transition-colors"
+                        <button
+                          type="button"
+                          onClick={() => setDownloadModal({ documentType: 'floor-plan', downloadUrl: property.floorPlanFile })}
+                          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B8862E] text-white text-sm font-medium hover:bg-[#A67C2A] transition-colors cursor-pointer"
                         >
                           <FaDownload className="w-4 h-4" />
                           Floor plan (PDF)
-                        </a>
+                        </button>
                       )}
                       {property.brochureFile && (
-                        <a
-                          href={property.brochureFile}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          download
-                          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#262626] text-white text-sm font-medium hover:bg-black transition-colors"
+                        <button
+                          type="button"
+                          onClick={() => setDownloadModal({ documentType: 'brochure', downloadUrl: property.brochureFile })}
+                          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#262626] text-white text-sm font-medium hover:bg-black transition-colors cursor-pointer"
                         >
                           <FaDownload className="w-4 h-4" />
                           Brochure (PDF)
-                        </a>
+                        </button>
                       )}
                     </div>
                   </>
@@ -482,6 +528,17 @@ const PropertyDetails = () => {
           </aside>
         </div>
       </main>
+
+      {/* Download lead modal */}
+      {downloadModal && (
+        <DownloadLeadModal
+          isOpen={!!downloadModal}
+          onClose={() => setDownloadModal(null)}
+          projectName={property.title}
+          documentType={downloadModal.documentType}
+          downloadUrl={downloadModal.downloadUrl}
+        />
+      )}
 
       {/* Lightbox */}
       {isLightboxOpen && (

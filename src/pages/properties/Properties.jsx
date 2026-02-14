@@ -7,14 +7,18 @@ import PropertiesFilter from './components/PropertiesFilter'
 import allPropertiesData from './data/allPropertiesData'
 import { useSiteData } from '../../context/DashboardStore'
 import {
+  PURPOSE_OPTIONS,
   LOCATIONS as FILTER_LOCATIONS,
   PRICE_RANGES_BUY,
   PRICE_RANGES_RENT,
+  PRICE_RANGES_OFF_PLAN,
   PRICE_MAX_OPTIONS_BUY,
   PRICE_MAX_OPTIONS_RENT,
+  PRICE_MAX_OPTIONS_OFF_PLAN,
 } from './data/filterOptions'
 import { setSeoMeta } from '../../utils/seo'
 import { fadeIn } from '../../utils/motion'
+import { getPropertySlug } from '../../utils/slug'
 
 const PER_PAGE = 12
 
@@ -22,21 +26,40 @@ const Properties = () => {
   const [searchParams] = useSearchParams()
   const siteData = useSiteData()
   const allProperties = siteData?.properties?.length ? siteData.properties : allPropertiesData
-  const [purpose, setPurpose] = useState('buy')
+  const purposeFromUrl = searchParams.get('purpose')
+  const validPurposeFromUrl = purposeFromUrl === 'rent' || purposeFromUrl === 'buy' || purposeFromUrl === 'off-plan' ? purposeFromUrl : null
+  const [purpose, setPurpose] = useState(validPurposeFromUrl ?? 'buy')
   const [location, setLocation] = useState('All Areas')
   const [propertyType, setPropertyType] = useState('All Types')
   const locationOptions = useMemo(() => {
-    const list = purpose === 'rent'
-      ? (siteData?.locationsListRent?.length ? siteData.locationsListRent : FILTER_LOCATIONS.filter((l) => l !== 'All Areas'))
-      : (siteData?.locationsListBuy?.length ? siteData.locationsListBuy : FILTER_LOCATIONS.filter((l) => l !== 'All Areas'))
+    let list
+    if (purpose === 'rent') {
+      list = siteData?.locationsListRent?.length ? siteData.locationsListRent : FILTER_LOCATIONS.filter((l) => l !== 'All Areas')
+    } else if (purpose === 'off-plan') {
+      list = siteData?.locationsListOffPlan?.length ? siteData.locationsListOffPlan : FILTER_LOCATIONS.filter((l) => l !== 'All Areas')
+    } else {
+      list = siteData?.locationsListBuy?.length ? siteData.locationsListBuy : FILTER_LOCATIONS.filter((l) => l !== 'All Areas')
+    }
     return ['All Areas', ...list]
-  }, [purpose, siteData?.locationsListBuy, siteData?.locationsListRent])
+  }, [purpose, siteData?.locationsListBuy, siteData?.locationsListRent, siteData?.locationsListOffPlan])
   const [bedrooms, setBedrooms] = useState('')
   const [bathrooms, setBathrooms] = useState('')
   const [priceMin, setPriceMin] = useState('')
   const [priceMax, setPriceMax] = useState('')
   const [sort, setSort] = useState('newest')
   const [page, setPage] = useState(1)
+
+  const purposeOptionsSorted = useMemo(() => {
+    const counts = { buy: 0, rent: 0, 'off-plan': 0 }
+    allProperties.forEach((p) => {
+      const pur = p.purpose || 'buy'
+      if (pur in counts) counts[pur]++
+    })
+    return [...PURPOSE_OPTIONS]
+      .sort((a, b) => (counts[b.value] || 0) - (counts[a.value] || 0))
+  }, [allProperties])
+
+  const defaultPurpose = purposeOptionsSorted[0]?.value ?? 'buy'
 
   // Sync filter state from URL whenever search params change (e.g. from header or hero search)
   useEffect(() => {
@@ -45,16 +68,20 @@ const Properties = () => {
     const typeParam = searchParams.get('type')
     const priceMinParam = searchParams.get('priceMin')
     const priceMaxParam = searchParams.get('priceMax')
-    if (purposeParam === 'rent' || purposeParam === 'buy') setPurpose(purposeParam)
+    if (purposeParam === 'rent' || purposeParam === 'buy' || purposeParam === 'off-plan') {
+      setPurpose(purposeParam)
+    } else {
+      setPurpose(defaultPurpose)
+    }
     if (locationParam != null && locationParam !== '') setLocation(locationParam)
     if (typeParam != null && typeParam !== '') setPropertyType(typeParam)
     if (priceMinParam != null) setPriceMin(priceMinParam)
     if (priceMaxParam !== null && priceMaxParam !== undefined) setPriceMax(priceMaxParam)
     setPage(1)
-  }, [searchParams])
+  }, [searchParams, defaultPurpose])
 
-  const priceRanges = purpose === 'rent' ? PRICE_RANGES_RENT : PRICE_RANGES_BUY
-  const priceMaxOpts = purpose === 'rent' ? PRICE_MAX_OPTIONS_RENT : PRICE_MAX_OPTIONS_BUY
+  const priceRanges = purpose === 'rent' ? PRICE_RANGES_RENT : purpose === 'off-plan' ? PRICE_RANGES_OFF_PLAN : PRICE_RANGES_BUY
+  const priceMaxOpts = purpose === 'rent' ? PRICE_MAX_OPTIONS_RENT : purpose === 'off-plan' ? PRICE_MAX_OPTIONS_OFF_PLAN : PRICE_MAX_OPTIONS_BUY
 
   const filteredAndSorted = useMemo(() => {
     let list = allProperties.filter((p) => p.purpose === purpose)
@@ -71,24 +98,34 @@ const Properties = () => {
     }
     if (bedrooms) {
       const num = bedrooms === '5' ? 5 : parseInt(bedrooms, 10)
-      list = list.filter((p) => p.bedrooms >= num)
+      list = list.filter((p) => {
+        const b = p.bedrooms
+        if (typeof b === 'number' && !Number.isNaN(b)) return b >= num
+        if (typeof b === 'string' && b.trim()) return b.includes(String(num))
+        return false
+      })
     }
     if (bathrooms) {
       const num = bathrooms === '4' ? 4 : parseInt(bathrooms, 10)
-      list = list.filter((p) => p.bathrooms >= num)
+      list = list.filter((p) => {
+        const b = p.bathrooms
+        if (typeof b === 'number' && !Number.isNaN(b)) return b >= num
+        if (typeof b === 'string' && b.trim()) return b.includes(String(num))
+        return false
+      })
     }
     if (priceMin) {
       const range = priceRanges.find((r) => r.value === priceMin)
-      if (range?.min != null) list = list.filter((p) => p.price >= range.min)
+      if (range?.min != null) list = list.filter((p) => (Number(p.price) || 0) >= range.min)
     }
     if (priceMax) {
       const opt = priceMaxOpts.find((r) => r.value === priceMax)
-      if (opt?.max != null) list = list.filter((p) => p.price <= opt.max)
+      if (opt?.max != null) list = list.filter((p) => (Number(p.price) || 0) <= opt.max)
     }
 
     const sorted = [...list].sort((a, b) => {
-      if (sort === 'price-asc') return a.price - b.price
-      if (sort === 'price-desc') return b.price - a.price
+      if (sort === 'price-asc') return (Number(a.price) || 0) - (Number(b.price) || 0)
+      if (sort === 'price-desc') return (Number(b.price) || 0) - (Number(a.price) || 0)
       return b.id - a.id
     })
     return sorted
@@ -162,6 +199,7 @@ const Properties = () => {
             <PropertiesFilter
               purpose={purpose}
               setPurpose={setPurpose}
+              purposeOptions={purposeOptionsSorted}
               location={location}
               setLocation={setLocation}
               locationOptions={locationOptions}
@@ -218,14 +256,17 @@ const Properties = () => {
                   >
                     <PropertieBlackCard
                       propId={property.id}
+                      propSlug={getPropertySlug(property)}
                       propTitle={property.title}
                       propDesc={property.description}
                       propPrice={property.price}
+                      propPriceDisplay={property.priceDisplay}
                       propImage={property.image}
                       propType={property.type}
                       propBath={property.bathrooms}
                       propBed={property.bedrooms}
                       propStatus={property.overview?.status ?? ''}
+                      propPurpose={property.purpose ?? 'buy'}
                     />
                   </motion.div>
                 ))}

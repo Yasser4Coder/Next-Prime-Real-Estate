@@ -8,14 +8,17 @@ import {
   BATHROOMS_OPTIONS,
   PRICE_RANGES_BUY,
   PRICE_RANGES_RENT,
+  PRICE_RANGES_OFF_PLAN,
   PRICE_MAX_OPTIONS_BUY,
   PRICE_MAX_OPTIONS_RENT,
+  PRICE_MAX_OPTIONS_OFF_PLAN,
   SORT_OPTIONS,
 } from '../data/filterOptions'
 
 const PropertiesFilter = ({
   purpose,
   setPurpose,
+  purposeOptions: purposeOptionsProp,
   location,
   setLocation,
   locationOptions: locationOptionsProp,
@@ -36,10 +39,11 @@ const PropertiesFilter = ({
 }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const panelRef = React.useRef(null)
-  const priceRanges = purpose === 'rent' ? PRICE_RANGES_RENT : PRICE_RANGES_BUY
+  const priceRanges = purpose === 'rent' ? PRICE_RANGES_RENT : purpose === 'off-plan' ? PRICE_RANGES_OFF_PLAN : PRICE_RANGES_BUY
   const priceMaxOptions =
-    purpose === 'rent' ? PRICE_MAX_OPTIONS_RENT : PRICE_MAX_OPTIONS_BUY
+    purpose === 'rent' ? PRICE_MAX_OPTIONS_RENT : purpose === 'off-plan' ? PRICE_MAX_OPTIONS_OFF_PLAN : PRICE_MAX_OPTIONS_BUY
   const locationOptions = locationOptionsProp?.length ? locationOptionsProp : DEFAULT_LOCATIONS
+  const purposeOptions = purposeOptionsProp?.length ? purposeOptionsProp : PURPOSE_OPTIONS
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -56,9 +60,9 @@ const PropertiesFilter = ({
 
   return (
     <div ref={panelRef} className="bg-[#FCFCFD] border border-[#e1e1e1] rounded-2xl p-4 sm:p-5 shadow-sm">
-      {/* Purpose tabs */}
+      {/* Purpose tabs - ordered by property count (most first) */}
       <div className="flex gap-2 mb-4">
-        {PURPOSE_OPTIONS.map(({ value, label }) => (
+        {purposeOptions.map(({ value, label }) => (
           <button
             key={value}
             type="button"

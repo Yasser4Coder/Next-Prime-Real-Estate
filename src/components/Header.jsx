@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import logo from '../assets/logo/gold_logo.webp'
 import Button from './Button'
-import { LOCATIONS as FALLBACK_LOCATIONS } from '../pages/home/data/SearchBarData'
 import { useSiteData } from '../context/DashboardStore'
 
 const navLinks = [
@@ -15,12 +14,13 @@ const navLinks = [
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [openDropdown, setOpenDropdown] = useState(null) // 'buy' | 'rent' | null
+  const [openDropdown, setOpenDropdown] = useState(null) // 'buy' | 'rent' | 'off-plan' | null
   const buyRentRef = useRef(null)
   const location = useLocation()
   const siteData = useSiteData()
-  const LOCATIONS_BUY = (siteData?.locationsListBuy?.length ? siteData.locationsListBuy : FALLBACK_LOCATIONS)
-  const LOCATIONS_RENT = (siteData?.locationsListRent?.length ? siteData.locationsListRent : FALLBACK_LOCATIONS)
+  const LOCATIONS_BUY = siteData?.locationsListBuy?.length ? siteData.locationsListBuy : []
+  const LOCATIONS_RENT = siteData?.locationsListRent?.length ? siteData.locationsListRent : []
+  const LOCATIONS_OFF_PLAN = siteData?.locationsListOffPlan?.length ? siteData.locationsListOffPlan : []
 
   const closeMenu = () => setIsMenuOpen(false)
 
@@ -221,6 +221,50 @@ const Header = () => {
                 )}
               </AnimatePresence>
             </div>
+            {/* Off Plan - dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setOpenDropdown((prev) => (prev === 'off-plan' ? null : 'off-plan'))}
+                className={`${linkBase} ${openDropdown === 'off-plan' ? linkActive : ''} flex items-center gap-1 cursor-pointer`}
+                aria-expanded={openDropdown === 'off-plan'}
+                aria-haspopup="true"
+              >
+                Off Plan
+                <svg className={`w-4 h-4 transition-transform ${openDropdown === 'off-plan' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <AnimatePresence>
+                {openDropdown === 'off-plan' && (
+                  <motion.div
+                    className="absolute left-0 top-full mt-1 min-w-[200px] py-2 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl shadow-black/30 z-50"
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Link
+                      to="/properties?purpose=off-plan"
+                      onClick={() => { setOpenDropdown(null); closeMenu() }}
+                      className="block px-4 py-2.5 text-sm text-white/90 hover:text-white hover:bg-white/10"
+                    >
+                      View all off-plan
+                    </Link>
+                    {LOCATIONS_OFF_PLAN.map((loc) => (
+                      <Link
+                        key={loc}
+                        to={`/properties?purpose=off-plan&location=${encodeURIComponent(loc)}`}
+                        onClick={() => { setOpenDropdown(null); closeMenu() }}
+                        className="block px-4 py-2.5 text-sm text-white/80 hover:text-white hover:bg-white/10"
+                      >
+                        {loc}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             {navLinks.slice(1).map((link) => (
               <React.Fragment key={link.path}>{linkContent(link)}</React.Fragment>
             ))}
@@ -340,6 +384,22 @@ const Header = () => {
                     <Link
                       key={loc}
                       to={`/properties?purpose=rent&location=${encodeURIComponent(loc)}`}
+                      onClick={closeMenu}
+                      className="block px-3 py-2 text-sm text-white/80 hover:text-white rounded-lg hover:bg-white/5"
+                    >
+                      {loc}
+                    </Link>
+                  ))}
+                </div>
+                <div className="border-b border-white/10 pb-2">
+                  <p className="px-3 py-2 text-xs font-medium uppercase tracking-wider text-[#C9A24D]">Off Plan</p>
+                  <Link to="/properties?purpose=off-plan" onClick={closeMenu} className="block px-3 py-2 text-sm text-white/80 hover:text-white rounded-lg hover:bg-white/5">
+                    View all off-plan
+                  </Link>
+                  {LOCATIONS_OFF_PLAN.map((loc) => (
+                    <Link
+                      key={loc}
+                      to={`/properties?purpose=off-plan&location=${encodeURIComponent(loc)}`}
                       onClick={closeMenu}
                       className="block px-3 py-2 text-sm text-white/80 hover:text-white rounded-lg hover:bg-white/5"
                     >

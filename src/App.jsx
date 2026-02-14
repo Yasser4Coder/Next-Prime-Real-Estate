@@ -23,6 +23,7 @@ import FeaturedManage from './pages/dashboard/FeaturedManage'
 import DevelopersManage from './pages/dashboard/DevelopersManage'
 import ContactManage from './pages/dashboard/ContactManage'
 import SocialManage from './pages/dashboard/SocialManage'
+import DownloadLeadsManage from './pages/dashboard/DownloadLeadsManage'
 
 function App() {
   const location = useLocation()
@@ -51,6 +52,7 @@ function App() {
             <Route path="developers" element={<DevelopersManage />} />
             <Route path="contact" element={<ContactManage />} />
             <Route path="social" element={<SocialManage />} />
+            <Route path="download-leads" element={<DownloadLeadsManage />} />
           </Route>
         </Routes>
       </DashboardStoreProvider>
@@ -69,7 +71,7 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/services" element={<Services />} />
               <Route path="/properties" element={<Properties />} />
-              <Route path="/properties/:id" element={<PropertyDetails />} />
+              <Route path="/properties/:slug" element={<PropertyDetails />} />
             </Routes>
           </Suspense>
         </AnimatePresence>

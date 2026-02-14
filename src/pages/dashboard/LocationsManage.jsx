@@ -15,6 +15,11 @@ const DEFAULT_RENT = [
   'Business Bay', 'Arabian Ranches', 'Dubai Hills Estate', 'Jumeirah Village Circle',
   'Dubai Creek Harbour', 'Emaar Beachfront',
 ]
+const DEFAULT_OFF_PLAN = [
+  'Dubai Marina', 'Downtown Dubai', 'Palm Jumeirah', 'JBR (Jumeirah Beach Residence)',
+  'Business Bay', 'Arabian Ranches', 'Dubai Hills Estate', 'Jumeirah Village Circle',
+  'Dubai Creek Harbour', 'Emaar Beachfront',
+]
 
 export default function LocationsManage() {
   const {
@@ -22,24 +27,29 @@ export default function LocationsManage() {
     setAreas,
     locationsListBuy: storeLocationsBuy,
     locationsListRent: storeLocationsRent,
+    locationsListOffPlan: storeLocationsOffPlan,
     setLocationsListBuy,
     setLocationsListRent,
+    setLocationsListOffPlan,
   } = useDashboardStore()
   const [areas, setAreasState] = useState([])
   const [locationsBuy, setLocationsBuyState] = useState([])
   const [locationsRent, setLocationsRentState] = useState([])
+  const [locationsOffPlan, setLocationsOffPlanState] = useState([])
   const [loading, setLoading] = useState(!!import.meta.env.VITE_API_URL)
   const [tab, setTab] = useState('areas')
-  const [listTab, setListTab] = useState('buy') // 'buy' | 'rent' under Search dropdown list
+  const [listTab, setListTab] = useState('buy') // 'buy' | 'rent' | 'off-plan' under Search dropdown list
   const [editingArea, setEditingArea] = useState(null)
   const [areaForm, setAreaForm] = useState({ name: '', subtitle: '', lat: '', lng: '' })
   const [locationNameBuy, setLocationNameBuy] = useState('')
   const [locationNameRent, setLocationNameRent] = useState('')
+  const [locationNameOffPlan, setLocationNameOffPlan] = useState('')
   const [saving, setSaving] = useState(false)
 
   const areasList = useApi() ? areas : storeAreas
   const buyList = useApi() ? locationsBuy : (storeLocationsBuy?.length ? storeLocationsBuy : DEFAULT_BUY)
   const rentList = useApi() ? locationsRent : (storeLocationsRent?.length ? storeLocationsRent : DEFAULT_RENT)
+  const offPlanList = useApi() ? locationsOffPlan : (storeLocationsOffPlan?.length ? storeLocationsOffPlan : DEFAULT_OFF_PLAN)
 
   const fetchAreas = async () => {
     try {
@@ -53,11 +63,20 @@ export default function LocationsManage() {
   const fetchLocations = async () => {
     try {
       const data = await api.getLocationsList()
-      setLocationsBuyState(Array.isArray(data?.buy) ? data.buy : [])
-      setLocationsRentState(Array.isArray(data?.rent) ? data.rent : [])
+      const buy = Array.isArray(data?.buy) ? data.buy : []
+      const rent = Array.isArray(data?.rent) ? data.rent : []
+      const offPlan = Array.isArray(data?.offPlan) ? data.offPlan : []
+      setLocationsBuyState(buy)
+      setLocationsRentState(rent)
+      setLocationsOffPlanState(offPlan)
+      // Update DashboardStore so Header dropdowns show correct lists (off-plan in Off Plan, not Buy)
+      setLocationsListBuy(buy)
+      setLocationsListRent(rent)
+      setLocationsListOffPlan(offPlan)
     } catch (_) {
       setLocationsBuyState([])
       setLocationsRentState([])
+      setLocationsOffPlanState([])
     }
   }
 
@@ -69,6 +88,7 @@ export default function LocationsManage() {
       setAreasState(storeAreas)
       setLocationsBuyState(storeLocationsBuy?.length ? storeLocationsBuy : DEFAULT_BUY)
       setLocationsRentState(storeLocationsRent?.length ? storeLocationsRent : DEFAULT_RENT)
+      setLocationsOffPlanState(storeLocationsOffPlan?.length ? storeLocationsOffPlan : DEFAULT_OFF_PLAN)
     }
   }, [])
 
@@ -77,8 +97,9 @@ export default function LocationsManage() {
       setAreasState(storeAreas)
       setLocationsBuyState(storeLocationsBuy?.length ? storeLocationsBuy : DEFAULT_BUY)
       setLocationsRentState(storeLocationsRent?.length ? storeLocationsRent : DEFAULT_RENT)
+      setLocationsOffPlanState(storeLocationsOffPlan?.length ? storeLocationsOffPlan : DEFAULT_OFF_PLAN)
     }
-  }, [storeAreas, storeLocationsBuy, storeLocationsRent])
+  }, [storeAreas, storeLocationsBuy, storeLocationsRent, storeLocationsOffPlan])
 
   const handleSaveArea = async (e) => {
     e.preventDefault()
@@ -134,7 +155,7 @@ export default function LocationsManage() {
 
   const handleAddLocation = async (e, purpose) => {
     e.preventDefault()
-    const name = (purpose === 'rent' ? locationNameRent : locationNameBuy).trim()
+    const name = (purpose === 'rent' ? locationNameRent : purpose === 'off-plan' ? locationNameOffPlan : locationNameBuy).trim()
     if (!name) return
     if (useApi()) {
       setSaving(true)
@@ -142,6 +163,7 @@ export default function LocationsManage() {
         await api.addLocation(name, purpose)
         await fetchLocations()
         if (purpose === 'rent') setLocationNameRent('')
+        else if (purpose === 'off-plan') setLocationNameOffPlan('')
         else setLocationNameBuy('')
         toast.success('Location added')
       } catch (err) {
@@ -154,6 +176,12 @@ export default function LocationsManage() {
         if (!rentList.includes(name)) {
           setLocationsListRent([...(storeLocationsRent?.length ? storeLocationsRent : DEFAULT_RENT), name])
           setLocationNameRent('')
+          toast.success('Location added')
+        }
+      } else if (purpose === 'off-plan') {
+        if (!offPlanList.includes(name)) {
+          setLocationsListOffPlan([...(storeLocationsOffPlan?.length ? storeLocationsOffPlan : DEFAULT_OFF_PLAN), name])
+          setLocationNameOffPlan('')
           toast.success('Location added')
         }
       } else {
@@ -178,6 +206,8 @@ export default function LocationsManage() {
     } else {
       if (purpose === 'rent') {
         setLocationsListRent((storeLocationsRent || DEFAULT_RENT).filter((l) => l !== name))
+      } else if (purpose === 'off-plan') {
+        setLocationsListOffPlan((storeLocationsOffPlan || DEFAULT_OFF_PLAN).filter((l) => l !== name))
       } else {
         setLocationsListBuy((storeLocationsBuy || DEFAULT_BUY).filter((l) => l !== name))
       }
@@ -239,6 +269,9 @@ export default function LocationsManage() {
             <button type="button" onClick={() => setListTab('rent')} className={`px-4 py-2 rounded-xl text-sm font-medium cursor-pointer ${listTab === 'rent' ? 'bg-[#B8862E] text-white' : 'bg-white border border-[#e1e1e1]'}`}>
               Locations for Rent
             </button>
+            <button type="button" onClick={() => setListTab('off-plan')} className={`px-4 py-2 rounded-xl text-sm font-medium cursor-pointer ${listTab === 'off-plan' ? 'bg-[#B8862E] text-white' : 'bg-white border border-[#e1e1e1]'}`}>
+              Locations for Off Plan
+            </button>
           </div>
           {listTab === 'buy' && (
             <>
@@ -267,6 +300,22 @@ export default function LocationsManage() {
                   <li key={name} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#f5f5f5] text-sm">
                     {name}
                     <button type="button" onClick={() => handleRemoveLocation(name, 'rent')} className="text-red-600 hover:underline cursor-pointer">×</button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          {listTab === 'off-plan' && (
+            <>
+              <form onSubmit={(e) => handleAddLocation(e, 'off-plan')} className="p-4 border-b border-[#e1e1e1] flex gap-2">
+                <input type="text" placeholder="Add location for Off Plan" value={locationNameOffPlan} onChange={(e) => setLocationNameOffPlan(e.target.value)} className="flex-1 px-3 py-2 rounded-xl border border-[#e1e1e1]" />
+                <button type="submit" disabled={saving} className="px-4 py-2 rounded-xl bg-[#B8862E] text-white text-sm font-medium cursor-pointer">Add</button>
+              </form>
+              <ul className="p-4 flex flex-wrap gap-2">
+                {offPlanList.map((name) => (
+                  <li key={name} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#f5f5f5] text-sm">
+                    {name}
+                    <button type="button" onClick={() => handleRemoveLocation(name, 'off-plan')} className="text-red-600 hover:underline cursor-pointer">×</button>
                   </li>
                 ))}
               </ul>
